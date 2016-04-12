@@ -63,6 +63,10 @@ dependencies {
 
     compile 'com.netflix.rxjava:rxjava-android:0.20.7'
     testCompile 'com.netflix.rxjava:rxjava-android:0.20.7'
+    testCompile 'org.mockito:mockito-all:1.10.19'
+    testCompile 'com.google.guava:guava:19.0'
+
+
 
     //unit test dependencies
     //instrumented test dependencies

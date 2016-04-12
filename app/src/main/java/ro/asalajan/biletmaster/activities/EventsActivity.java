@@ -6,37 +6,29 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.TextView;
 
-import java.io.InputStream;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import ro.asalajan.biletmaster.Constants;
+import okhttp3.OkHttpClient;
 import ro.asalajan.biletmaster.R;
-import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
-import ro.asalajan.biletmaster.parser.EventsParserImpl;
+import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
 import ro.asalajan.biletmaster.services.BiletMasterService;
 import ro.asalajan.biletmaster.services.EventsService;
-import ro.asalajan.biletmaster.services.Obs;
-import rx.Observable;
+import ro.asalajan.biletmaster.services.HttpGateway;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.observables.ViewObservable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func1;
 import rx.functions.Func2;
 import rx.schedulers.Schedulers;
 
 public class EventsActivity extends Activity {
 
-    Calendar calendar = new GregorianCalendar();
+    private BiletMasterService biletService = new BiletMasterService(new BiletMasterParserImpl(),  new HttpGateway());
 
-    EventsService eventsService = new EventsService(new EventsParserImpl());
-
-    BiletMasterService biletService = new BiletMasterService();
-
-    Subscription subscribe;
+    private Subscription subscribe;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

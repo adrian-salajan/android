@@ -5,7 +5,6 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -13,15 +12,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
 import ro.asalajan.biletmaster.model.Event;
-import ro.asalajan.biletmaster.parser.EventsParser;
-import ro.asalajan.biletmaster.parser.EventsParserImpl;
+import ro.asalajan.biletmaster.parser.BiletMasterParser;
+import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
 import rx.functions.Func1;
 
 public class ServiceFunctions {
@@ -99,9 +97,9 @@ public class ServiceFunctions {
         return null;
     }
 
-    private static EventsParserImpl parser = new EventsParserImpl();
+    private static BiletMasterParserImpl parser = new BiletMasterParserImpl();
 
-    public static Func1<? super InputStream, List<Event>> parseEvents(final EventsParser parser) {
+    public static Func1<? super InputStream, List<Event>> parseEvents(final BiletMasterParser parser) {
         return new Func1<InputStream, List<Event>>() {
             @Override
             public List<Event> call(InputStream inputStream) {

@@ -19,7 +19,7 @@ import ro.asalajan.biletmaster.model.Event;
 @RunWith(AndroidJUnit4.class)
 public class TestJCalendarParser {
 
-    EventsParserImpl parser = new EventsParserImpl();
+    BiletMasterParserImpl parser = new BiletMasterParserImpl();
 
 
     @Test

@@ -6,8 +6,7 @@ import java.util.List;
 
 import ro.asalajan.biletmaster.Constants;
 import ro.asalajan.biletmaster.model.Event;
-import ro.asalajan.biletmaster.parser.EventsParser;
-import ro.asalajan.biletmaster.parser.EventsParserImpl;
+import ro.asalajan.biletmaster.parser.BiletMasterParser;
 import rx.Observable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
@@ -20,9 +19,9 @@ import static ro.asalajan.biletmaster.services.ServiceFunctions.parseEvents;
 
 public class EventsService {
 
-    private  EventsParser eventsParser;
+    private BiletMasterParser eventsParser;
 
-    public EventsService(EventsParser eventsParser) {
+    public EventsService(BiletMasterParser eventsParser) {
         this.eventsParser = eventsParser;
     }
 

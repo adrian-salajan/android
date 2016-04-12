@@ -13,7 +13,7 @@ import java.util.List;
 import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 
-public class EventsParserImpl implements EventsParser {
+public class BiletMasterParserImpl implements BiletMasterParser {
 
     public List<Event> parseEvents(InputStream inputStream) {
         try {
