@@ -1,5 +1,7 @@
 package ro.asalajan.biletmaster.services;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -33,6 +35,7 @@ public class HttpGateway {
 
                                              @Override
                                              public void onResponse(Call call, Response response) throws IOException {
+                                                 Log.d("download thread", Thread.currentThread().getName());
                                                  subscriber.onNext(response.body().byteStream());
                                              }
                                          });

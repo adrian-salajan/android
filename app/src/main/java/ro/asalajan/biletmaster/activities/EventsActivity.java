@@ -4,121 +4,79 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 
-import okhttp3.OkHttpClient;
 import ro.asalajan.biletmaster.R;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
 import ro.asalajan.biletmaster.services.BiletMasterService;
-import ro.asalajan.biletmaster.services.EventsService;
 import ro.asalajan.biletmaster.services.HttpGateway;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.ViewObservable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Func2;
+import rx.observers.Observers;
 import rx.schedulers.Schedulers;
 
 public class EventsActivity extends Activity {
 
-    private BiletMasterService biletService = new BiletMasterService(new BiletMasterParserImpl(),  new HttpGateway());
+    private BiletMasterService biletService = new BiletMasterService(new BiletMasterParserImpl(), new HttpGateway());
 
-    private Subscription subscribe;
+    private Subscription locationsSub;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_events);
 
-        final TextView text = (TextView) findViewById(R.id.text);
+        createLocationSpinner();
 
+    }
 
-        subscribe = ViewObservable.clicks(text, true)
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .observeOn(Schedulers.io())
-                .zipWith(biletService.getLocations(), new Func2<TextView, List<Location>, List<Location>>() {
-                    @Override
-                    public List<Location> call(TextView textView, List<Location> locations) {
-                        return locations;
-                    }
-                })
+    private void createLocationSpinner() {
+        locationsSub = biletService.getLocations()
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(updateTextView(text));
+                .subscribe(updateLocationSpinner());
+    }
+
+    private Observer<List<Location>> updateLocationSpinner() {
+        return Observers.create(
+            locations -> {
+                Log.d("update spinner thread", Thread.currentThread().getName());
+                ArrayAdapter<Location> adapter = new ArrayAdapter<Location>(this,android.R.layout.simple_spinner_item, locations);
+                Spinner spinner = (Spinner) findViewById(R.id.locationSpinner);
+                // Specify the layout to use when the list of choices appears
+                // adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinner.setAdapter(adapter);
+
+            },
+            throwable -> Log.e("error", throwable.toString())
+        );
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        subscribe.unsubscribe();
+        locationsSub.unsubscribe();
     }
 
     @NonNull
     private Observer<List<Location>> updateTextView(final TextView text) {
-        return new Observer<List<Location>>() {
-            @Override
-            public void onCompleted() {
-                Log.e("obs", "complete");
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Log.e("obs error", e.toString());
-            }
-
-            @Override
-            public void onNext(List<Location> locations) {
+        return Observers.create(
+            locations -> {
                 StringBuilder builder = new StringBuilder();
-                for (Location loc: locations) {
+                for (Location loc : locations) {
                     builder.append(loc.getLocation()).append(System.lineSeparator());
                 }
+                Log.d("observer thread", Thread.currentThread().getName());
                 text.setText(builder.toString());
-            }
-        };
+            },
+            throwable -> Log.e("obs error", throwable.toString()),
+            () -> Log.e("obs", "complete"));
+
     }
-
-
-
-//        Calendar c = new GregorianCalendar();
-
-//        Observable<Integer> dayDeltas =  Obs.obsToSequence(Obs.Observable(text));
-//        eventsService.downloadEvents(calendar, dayDeltas)
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(updateTextView(text));
-
-
-
-
-//    @NonNull
-//    private Observer<List<Event>> updateTextView(final TextView text) {
-//        return new Observer<List<Event>>() {
-//            @Override
-//            public void onCompleted() {
-//                Log.e("obs", "complete");
-//            }
-//
-//            @Override
-//            public void onError(Throwable e) {
-//                Log.e("obs error", e.toString());
-//            }
-//
-//            @Override
-//            public void onNext(List<Event> events) {
-//                StringBuilder builder = new StringBuilder();
-//                for (Event e: events) {
-//                    builder.append(e.getLocation()).append(System.lineSeparator());
-//                }
-//                text.setText(builder.toString());
-//            }
-//        };
-//    }
-
-
-
-
-
 }

@@ -1,5 +1,7 @@
 package ro.asalajan.biletmaster.parser;
 
+import android.util.Log;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -38,6 +40,7 @@ public class BiletMasterParserImpl implements BiletMasterParser {
     @Override
     public List<Location> parseLocations(InputStream inputStream) {
         try {
+            Log.d("parser thread", Thread.currentThread().getName());
             Document doc = Jsoup.parse(inputStream, "UTF-8", "");
             Elements stacktitles = doc.getElementsByClass("stacktitle"); //event locations
 
