@@ -1,13 +1,16 @@
 package ro.asalajan.biletmaster.model;
 
+import java.util.List;
 import java.util.Objects;
 
 public class Location {
 
     private String location;
+    private List<Venue> venues;
 
-    public Location(String location) {
+    public Location(String location, List<Venue> venues) {
         this.location = location;
+        this.venues = venues;
     }
 
     public String getLocation() {
@@ -19,16 +22,20 @@ public class Location {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Location location1 = (Location) o;
-        return Objects.equals(location, location1.location);
+        return Objects.equals(location, location1.location) &&
+                Objects.equals(venues, location1.venues);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(location);
+        return Objects.hash(location, venues);
     }
 
     @Override
     public String toString() {
-        return location;
+        return "Location{" +
+                "location='" + location + '\'' +
+                ", venues=" + venues +
+                '}';
     }
 }

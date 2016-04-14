@@ -36,13 +36,14 @@ retrolambda {
     jdk System.getenv("JAVA_8")
     oldJdk System.getenv("JAVA_7")
 }
-task copyResDirectoryToClasses(type: Copy){
-    from "${projectDir}/src/test/res"
-    //into "${buildDir}/intermediates/classes/androidTest/debug/ro/asalajan/biletmaster/parser"
-    into "${buildDir}/intermediates/classes/androidTest/debug/res"
-}
+//task copyResDirectoryToClasses(type: Copy){
+//    from "${projectDir}/src/test/res"
+//    into "${buildDir}/intermediates/classes/test/debug/res"
+//    from "${projectDir}/src/test/res"
+//    into "${buildDir}/intermediates/classes/androidTest/debug/res"
+//}
 
-assembleDebug.dependsOn(copyResDirectoryToClasses)
+//assembleDebug.dependsOn(copyResDirectoryToClasses)
 
 dependencies {
 

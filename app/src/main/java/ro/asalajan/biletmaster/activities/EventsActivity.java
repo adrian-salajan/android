@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -15,8 +17,10 @@ import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
 import ro.asalajan.biletmaster.services.BiletMasterService;
 import ro.asalajan.biletmaster.services.HttpGateway;
+import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
+import rx.android.observables.ViewObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.observers.Observers;
 import rx.schedulers.Schedulers;
@@ -34,7 +38,10 @@ public class EventsActivity extends Activity {
 
         createLocationSpinner();
 
+        createEventsView();
+
     }
+
 
     private void createLocationSpinner() {
         locationsSub = biletService.getLocations()
@@ -56,6 +63,27 @@ public class EventsActivity extends Activity {
             },
             throwable -> Log.e("error", throwable.toString())
         );
+    }
+
+    private void createEventsView() {
+        Spinner spinner = (Spinner) findViewById(R.id.locationSpinner);
+
+        Observable.create(subscriber -> {
+            spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    Location selectedLocation = (Location) spinner.getItemAtPosition(position);
+                    subscriber.onNext(selectedLocation);
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+
+        });
+
     }
 
     @Override

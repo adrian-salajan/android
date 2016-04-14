@@ -25,7 +25,7 @@ public class TestJCalendarParser {
     @Test
     public void emptyInputStreamReturnsEmptyList() throws IOException, XmlPullParserException {
         InputStream inputStream = readResource("empty.html");
-        List<Event> events = parser.parse(inputStream);
+        List<Event> events = parser.parseEvents(inputStream);
 
         Assert.assertEquals(Collections.emptyList(), events);
     }
@@ -33,7 +33,7 @@ public class TestJCalendarParser {
     @Test
     public void parserReturnsEventsForEveryStacktitle() throws IOException, XmlPullParserException, URISyntaxException {
         InputStream inputStream = readResource("calendar.html");
-        List<Event> events = parser.parse(inputStream);
+        List<Event> events = parser.parseEvents(inputStream);
 
         Assert.assertEquals(10, events.size());
     }

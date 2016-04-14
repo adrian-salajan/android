@@ -5,7 +5,9 @@ import android.util.Log;
 import java.io.InputStream;
 import java.util.List;
 
+import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
+import ro.asalajan.biletmaster.model.Venue;
 import ro.asalajan.biletmaster.parser.BiletMasterParser;
 import rx.Observable;
 import rx.functions.Func1;
@@ -25,6 +27,10 @@ public class BiletMasterService {
     public Observable<List<Location>> getLocations() {
         return httpGateway.downloadWebPage(LOCATIONS_URL).map(parseLocations);
     }
+
+//    public Observable<List<Event>> getEventsForVenue(Venue venue) {
+//
+//    }
 
     private Func1<? super InputStream, List<Location>> parseLocations =
         new Func1<InputStream, List<Location>>() {
