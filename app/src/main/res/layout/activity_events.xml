@@ -12,13 +12,19 @@
         android:id="@+id/locationSpinner"
         android:layout_gravity="top" />
 
-    <TextView
+    <ListView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Hello World!"
-        android:textSize="36dp"
-        android:textIsSelectable="true"
-        android:id="@+id/text"/>
+        android:layout_height="wrap_content"
+        android:id="@+id/eventsListView" />
+
+
+    <!--<TextView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:text="Hello World!"-->
+        <!--android:textSize="36dp"-->
+        <!--android:textIsSelectable="true"-->
+        <!--android:id="@+id/text"/>-->
 <!--
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

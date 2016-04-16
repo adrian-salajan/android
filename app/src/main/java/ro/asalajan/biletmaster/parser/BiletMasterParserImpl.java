@@ -22,20 +22,37 @@ public class BiletMasterParserImpl implements BiletMasterParser {
     public List<Event> parseEvents(InputStream inputStream) {
         try {
             Document doc = Jsoup.parse(inputStream, "UTF-8", "");
-            Elements stacktitles = doc.getElementsByClass("stacktitle"); //locations
+            Elements candidateContainers = doc.getElementsByClass("elistlink");
 
             List<Event> events = new ArrayList<>();
 
-            for(Element stacktitle : stacktitles) {
-                String location = stacktitle.text();
-
-                Event e = new Event(location);
-                events.add(e);
+            for(Element container : candidateContainers) {
+                Event event = parseEvent(container);
+                if (event != null) {
+                //    Log.d("parserEvents", "addedEvent:" + event);
+                    events.add(event);
+                }
             }
+          //  Log.d("parserEvents", "addedEvent:" + events);
             return events;
 
         } catch (IOException e) {
             throw new RuntimeException("Parser failure", e);
+        }
+    }
+
+    private Event parseEvent(Element container) {
+        Elements _eventName = container.getElementsByClass("title");
+        if (_eventName.isEmpty()) {
+            return null;
+        } else {
+            String eventName = _eventName.text();
+            String artist = "";
+            Elements _artist = container.getElementsByClass("artist");
+            if (!_artist.isEmpty()) {
+                artist = _artist.text();
+            }
+            return new Event(eventName, artist);
         }
     }
 

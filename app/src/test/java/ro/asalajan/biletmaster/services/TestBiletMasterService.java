@@ -2,6 +2,8 @@ package ro.asalajan.biletmaster.services;
 
 import com.google.common.collect.Lists;
 
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.List;
 
+import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.model.Venue;
 import ro.asalajan.biletmaster.parser.BiletMasterParser;
@@ -18,6 +21,7 @@ import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
 import rx.Observable;
 import rx.observers.TestSubscriber;
 
+import static com.google.common.collect.Lists.*;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -53,7 +57,7 @@ public class TestBiletMasterService {
         locations.subscribe(probe);
 
         probe.assertNoErrors();
-        probe.assertValue(Lists.newArrayList(
+        probe.assertValue(newArrayList(
                 new Location("a", Collections.emptyList()),
                 new Location("b", Collections.emptyList()),
                 new Location("c", Collections.emptyList())
@@ -72,16 +76,36 @@ public class TestBiletMasterService {
         locations.subscribe(probe);
 
         probe.assertNoErrors();
-        probe.assertValue(Lists.newArrayList(
-                new Location("location1", Lists.newArrayList(
+        probe.assertValue(newArrayList(
+                new Location("location1", newArrayList(
                         new Venue("venue1", "/venue1Url"),
                         new Venue("venue2", "/venue2Url"),
                         new Venue("venue3", "/venue3Url"))),
-                new Location("location2", Lists.newArrayList(
+                new Location("location2", newArrayList(
                         new Venue("venue4", "/venue4Url"),
                         new Venue("venue5", "/venue5Url"),
                         new Venue("venue6", "/venue6Url")))
         ));
+    }
+
+    @Test
+    public void getEventsForVenue() {
+        InputStream allLocations = readResource("eventsForVenue.html");
+        when(httpGateway.downloadWebPage(anyString()))
+                .thenReturn(Observable.<InputStream>just(allLocations));
+
+        Observable<List<Event>> events = service.getEventsForVenue(new Venue("asd", "url"));
+
+        TestSubscriber<List<Event>> probe = new TestSubscriber<>();
+
+        events.subscribe(probe);
+
+        probe.assertNoErrors();
+        List<List<Event>> result = probe.getOnNextEvents();
+        Assert.assertEquals("Unexpected number of events", 8, result.get(0).size());
+//        probe.assertValues(newArrayList(
+//                new Event("Event1", "Artist1"),
+//                new Event("Event2", "Artist2")));
     }
 
     private InputStream readResource(String res) {

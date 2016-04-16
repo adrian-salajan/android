@@ -7,12 +7,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import ro.asalajan.biletmaster.R;
+import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
 import ro.asalajan.biletmaster.services.BiletMasterService;
@@ -20,7 +23,6 @@ import ro.asalajan.biletmaster.services.HttpGateway;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.ViewObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.observers.Observers;
 import rx.schedulers.Schedulers;
@@ -38,7 +40,7 @@ public class EventsActivity extends Activity {
 
         createLocationSpinner();
 
-        createEventsView();
+        createEventsFromSpinnerSelection();
 
     }
 
@@ -53,7 +55,6 @@ public class EventsActivity extends Activity {
     private Observer<List<Location>> updateLocationSpinner() {
         return Observers.create(
             locations -> {
-                Log.d("update spinner thread", Thread.currentThread().getName());
                 ArrayAdapter<Location> adapter = new ArrayAdapter<Location>(this,android.R.layout.simple_spinner_item, locations);
                 Spinner spinner = (Spinner) findViewById(R.id.locationSpinner);
                 // Specify the layout to use when the list of choices appears
@@ -65,10 +66,23 @@ public class EventsActivity extends Activity {
         );
     }
 
-    private void createEventsView() {
-        Spinner spinner = (Spinner) findViewById(R.id.locationSpinner);
+    private void createEventsFromSpinnerSelection() {
+        ListView listView =(ListView) findViewById(R.id.eventsListView);
+        EventAdapter eventAdapter = new EventAdapter(this, new ArrayList<Event>());
+        listView.setAdapter(eventAdapter);
 
-        Observable.create(subscriber -> {
+        Spinner spinner = (Spinner) findViewById(R.id.locationSpinner);
+        selections(spinner)
+                .flatMapIterable(location -> location.getVenues())
+                .compose(RxUtils.io())
+                .flatMap(venue -> biletService.getEventsForVenue(venue))
+                .compose(RxUtils.ui())
+                .subscribe(updateEventsListView(eventAdapter));
+
+    }
+
+    private Observable<Location> selections(final Spinner spinner) {
+        return Observable.create(subscriber -> {
             spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -81,9 +95,7 @@ public class EventsActivity extends Activity {
 
                 }
             });
-
         });
-
     }
 
     @Override
@@ -93,18 +105,16 @@ public class EventsActivity extends Activity {
     }
 
     @NonNull
-    private Observer<List<Location>> updateTextView(final TextView text) {
+    private Observer<List<Event>> updateEventsListView(final EventAdapter adapter) {
+
+
         return Observers.create(
-            locations -> {
-                StringBuilder builder = new StringBuilder();
-                for (Location loc : locations) {
-                    builder.append(loc.getLocation()).append(System.lineSeparator());
-                }
-                Log.d("observer thread", Thread.currentThread().getName());
-                text.setText(builder.toString());
-            },
-            throwable -> Log.e("obs error", throwable.toString()),
-            () -> Log.e("obs", "complete"));
+                events -> {
+                    adapter.clear();
+                    adapter.addAll(events);
+                },
+                throwable -> Log.e("obs error", throwable.toString()),
+                () -> Log.e("obs", "complete"));
 
     }
 }

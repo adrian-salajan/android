@@ -14,7 +14,8 @@ import rx.functions.Func1;
 
 public class BiletMasterService {
 
-    private static final String LOCATIONS_URL = "http://biletmaster.ro/ron/AllPlaces/Minden_helyszin";
+    private static final String ROOT = "http://biletmaster.ro";
+    private static final String LOCATIONS_URL = ROOT + "/ron/AllPlaces/Minden_helyszin";
 
     private final BiletMasterParser parser;
     private final HttpGateway httpGateway;
@@ -28,9 +29,10 @@ public class BiletMasterService {
         return httpGateway.downloadWebPage(LOCATIONS_URL).map(parseLocations);
     }
 
-//    public Observable<List<Event>> getEventsForVenue(Venue venue) {
-//
-//    }
+    public Observable<List<Event>> getEventsForVenue(Venue venue) {
+        return httpGateway.downloadWebPage(ROOT + venue.getUrl())
+                .map(data -> parser.parseEvents(data));
+    }
 
     private Func1<? super InputStream, List<Location>> parseLocations =
         new Func1<InputStream, List<Location>>() {

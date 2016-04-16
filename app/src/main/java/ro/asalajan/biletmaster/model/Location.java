@@ -17,6 +17,10 @@ public class Location {
         return location;
     }
 
+    public List<Venue> getVenues() {
+        return venues;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
