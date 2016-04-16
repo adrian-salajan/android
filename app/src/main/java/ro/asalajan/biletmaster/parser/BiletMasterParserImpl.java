@@ -1,7 +1,10 @@
 package ro.asalajan.biletmaster.parser;
 
-import android.util.Log;
+import com.google.common.base.Optional;
 
+import org.joda.time.LocalDateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -10,7 +13,6 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import ro.asalajan.biletmaster.model.Event;
@@ -18,6 +20,9 @@ import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.model.Venue;
 
 public class BiletMasterParserImpl implements BiletMasterParser {
+
+    public static final String DATE_FORMAT = "dd.MM.yyyy HH:mm";
+    public static final DateTimeFormatter FMT = DateTimeFormat.forPattern(DATE_FORMAT);
 
     public List<Event> parseEvents(InputStream inputStream) {
         try {
@@ -29,11 +34,9 @@ public class BiletMasterParserImpl implements BiletMasterParser {
             for(Element container : candidateContainers) {
                 Event event = parseEvent(container);
                 if (event != null) {
-                //    Log.d("parserEvents", "addedEvent:" + event);
                     events.add(event);
                 }
             }
-          //  Log.d("parserEvents", "addedEvent:" + events);
             return events;
 
         } catch (IOException e) {
@@ -41,18 +44,73 @@ public class BiletMasterParserImpl implements BiletMasterParser {
         }
     }
 
-    private Event parseEvent(Element container) {
-        Elements _eventName = container.getElementsByClass("title");
-        if (_eventName.isEmpty()) {
+    private Event parseEvent(Element eventContainer) {
+        Elements _event = eventContainer.getElementsByClass("title");
+        Elements _artist = eventContainer.getElementsByClass("artist");
+        if (_event.isEmpty()) {
             return null;
-        } else {
-            String eventName = _eventName.text();
-            String artist = "";
-            Elements _artist = container.getElementsByClass("artist");
-            if (!_artist.isEmpty()) {
-                artist = _artist.text();
-            }
-            return new Event(eventName, artist);
+        }
+        Element dateContainer = getDateContainer(eventContainer);
+        //not sure if year imporant yet
+        Optional<LocalDateTime> date = parseDate(dateContainer, DateUtils.getCurrentYear());
+        // TODO parse tickets availability & url
+        return new Event(_event.text(), _artist.text(), date, false, "url");
+
+    }
+
+    private Element getDateContainer(Element eventContainer) {
+        Element td = eventContainer.parent();
+        Element previousTd = td.previousElementSibling();
+        return previousTd;
+    }
+
+    private Optional<LocalDateTime> parseDate(Element dateContainer, int year) {
+        Element datePart = dateContainer.getElementsByClass("ajanlo-date").first();
+
+        Element _month = getMonth(datePart);
+        Element _day = getDay(datePart);
+
+        Element timePart = dateContainer.getElementsByClass("dateplate").first();
+        Element _time = getTime(timePart);
+
+        if (_month == null || _day == null || _time == null) {
+            return Optional.absent();
+        }
+
+        String newDate = new String(DATE_FORMAT);
+        newDate = newDate.replace("dd", _day.text());
+        newDate = newDate.replace("MM", parseMonth(_month.text()));
+        newDate = newDate.replace("yyyy", String.valueOf(year));
+        newDate = newDate.replace("HH:mm", _time.text());
+        return Optional.fromNullable(FMT.parseLocalDateTime(newDate));
+
+    }
+
+    private Element getTime(Element timePart) {
+        Element timeDiv = timePart.getElementsByClass("dateplate").first();
+        if (timeDiv == null || timeDiv.children().isEmpty()) {
+            return null;
+        }
+        return timeDiv.child(0);
+    }
+
+    private Element getMonth(Element datePart) {
+        return datePart.getElementsByClass("ajanlo-date-top").first();
+    }
+
+    private Element getDay(Element datePart) {
+        Element dayDiv = datePart.getElementsByClass("ajanlo-date-bottom2").first();
+        if (dayDiv == null || dayDiv.children().isEmpty()) {
+            return null;
+        }
+        return dayDiv.child(0);
+    }
+
+    private String parseMonth(String monthName) {
+        switch (monthName) {
+            case "APR": return "04";
+
+            default: throw new IllegalStateException("Cannot parse month: " + monthName);
         }
     }
 

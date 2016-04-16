@@ -1,9 +1,9 @@
 package ro.asalajan.biletmaster.services;
 
-import com.google.common.collect.Lists;
-
 import junit.framework.Assert;
 
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,7 +21,7 @@ import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
 import rx.Observable;
 import rx.observers.TestSubscriber;
 
-import static com.google.common.collect.Lists.*;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,6 +32,8 @@ public class TestBiletMasterService {
     private HttpGateway httpGateway;
 
     BiletMasterService service;
+
+    private DateTimeFormatter fmt = DateTimeFormat.forPattern("dd.MM.yyyy HH:mm");
 
     @Before
     public void setup() throws UnsupportedEncodingException {
@@ -101,12 +103,43 @@ public class TestBiletMasterService {
         events.subscribe(probe);
 
         probe.assertNoErrors();
+        List<Event> result = probe.getOnNextEvents().get(0);
+
+        Assert.assertEquals("Unexpected number of events", 8, result.size());
+
+        Assert.assertEquals("Unexpected title", "Aproape de tine", result.get(0).getName());
+        Assert.assertEquals("Unexpected artist", "artist1", result.get(0).getArtist());
+
+        Assert.assertEquals("Unexpected title", "Aproape de tine", result.get(1).getName());
+        Assert.assertEquals("Unexpected artist", "", result.get(1).getArtist());
+    }
+
+    @Test
+    public void getEventsWithDateForVenue() {
+        InputStream allLocations = readResource("eventsForVenue.html");
+        when(httpGateway.downloadWebPage(anyString()))
+                .thenReturn(Observable.<InputStream>just(allLocations));
+
+        Observable<List<Event>> eventsObs = service.getEventsForVenue(new Venue("asd", "url"));
+
+        TestSubscriber<List<Event>> probe = new TestSubscriber<>();
+
+        eventsObs.subscribe(probe);
+
+        probe.assertNoErrors();
         List<List<Event>> result = probe.getOnNextEvents();
         Assert.assertEquals("Unexpected number of events", 8, result.get(0).size());
-//        probe.assertValues(newArrayList(
-//                new Event("Event1", "Artist1"),
-//                new Event("Event2", "Artist2")));
+
+        List<Event> events = result.get(0);
+
+        Assert.assertEquals("19.04.2016 10:30", fmt.print(events.get(0).getDateTime().get()));
+        Assert.assertEquals("19.04.2016 12:30", fmt.print(events.get(1).getDateTime().get()));
+        Assert.assertEquals("20.04.2016 10:30", fmt.print(events.get(2).getDateTime().get()));
     }
+
+    //TODO: handle & test for missing Event.artist & Event.room & Event.date
+
+    //TODO: try hamcrest for UT
 
     private InputStream readResource(String res) {
         return this.getClass().getClassLoader().getResourceAsStream(res);

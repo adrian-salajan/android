@@ -15,3 +15,10 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+## Joda Time
+# makes android joda-time not cry in UTs
+-dontwarn org.joda.convert.**
+-dontwarn org.joda.time.**
+-keep class org.joda.time.** { *; }
+-keep interface org.joda.time.** { *; }

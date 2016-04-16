@@ -10,6 +10,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
 
+import net.danlew.android.joda.JodaTimeAndroid;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +38,7 @@ public class EventsActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        JodaTimeAndroid.init(this);
         setContentView(R.layout.activity_events);
 
         createLocationSpinner();
