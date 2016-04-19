@@ -13,13 +13,16 @@ import android.widget.Spinner;
 import net.danlew.android.joda.JodaTimeAndroid;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import ro.asalajan.biletmaster.R;
+import ro.asalajan.biletmaster.activities.adapter.EventAdapter;
+import ro.asalajan.biletmaster.activities.adapter.LocationAdapter;
 import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
+import ro.asalajan.biletmaster.model.Venue;
 import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
+import ro.asalajan.biletmaster.services.BiletMasterHelper;
 import ro.asalajan.biletmaster.services.BiletMasterService;
 import ro.asalajan.biletmaster.services.HttpGateway;
 import rx.Observable;
@@ -49,7 +52,7 @@ public class EventsActivity extends Activity {
 
 
     private void createLocationSpinner() {
-        locationsSub = biletService.getLocations()
+        locationsSub = biletService.getDistinctLocations(BiletMasterHelper.DISTINCT_LOCATIONS)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(updateLocationSpinner());
@@ -58,10 +61,11 @@ public class EventsActivity extends Activity {
     private Observer<List<Location>> updateLocationSpinner() {
         return Observers.create(
             locations -> {
-                ArrayAdapter<Location> adapter = new ArrayAdapter<Location>(this,android.R.layout.simple_spinner_item, locations);
+                //ArrayAdapter<Location> adapter = new LocationAdapter(this, locations);
+                ArrayAdapter<Location> adapter = new ArrayAdapter<Location>(this, R.layout.support_simple_spinner_dropdown_item, locations);
                 Spinner spinner = (Spinner) findViewById(R.id.locationSpinner);
                 // Specify the layout to use when the list of choices appears
-                // adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                //adapter.setDropDownViewResource(R.layout.);
                 spinner.setAdapter(adapter);
 
             },
@@ -76,13 +80,12 @@ public class EventsActivity extends Activity {
 
         Spinner spinner = (Spinner) findViewById(R.id.locationSpinner);
         selections(spinner)
-                .flatMapIterable(location -> location.getVenues())
-                .compose(RxUtils.io())
-                .flatMap(venue -> biletService.getEventsForVenue(venue))
-                .compose(RxUtils.ui())
+                .flatMap(location -> biletService.getEventsForLocation(location))
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(updateEventsListView(eventAdapter));
 
     }
+
 
     private Observable<Location> selections(final Spinner spinner) {
         return Observable.create(subscriber -> {
@@ -113,11 +116,12 @@ public class EventsActivity extends Activity {
 
         return Observers.create(
                 events -> {
+                    Log.d(">>>>>>>>>>>>>", events.toString());
                     adapter.clear();
                     adapter.addAll(events);
                 },
-                throwable -> Log.e("obs error", throwable.toString()),
-                () -> Log.e("obs", "complete"));
+                throwable -> Log.e(">>>>>>>>>>>>> error", throwable.toString()),
+                () -> Log.e(">>>>>>>>>>>>> obs", "complete"));
 
     }
 }

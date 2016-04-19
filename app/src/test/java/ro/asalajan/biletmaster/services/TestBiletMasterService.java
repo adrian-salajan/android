@@ -6,12 +6,14 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
@@ -19,7 +21,10 @@ import ro.asalajan.biletmaster.model.Venue;
 import ro.asalajan.biletmaster.parser.BiletMasterParser;
 import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
 import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 import rx.observers.TestSubscriber;
+import rx.schedulers.Schedulers;
+import rx.schedulers.TestScheduler;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Matchers.anyString;
@@ -91,6 +96,34 @@ public class TestBiletMasterService {
     }
 
     @Test
+    public void mergeVenuesByDistinctLocations() throws UnsupportedEncodingException {
+        InputStream allLocations = readResource("duplicateLocations.html");
+        when(httpGateway.downloadWebPage(anyString()))
+                .thenReturn(Observable.<InputStream>just(allLocations));
+
+
+        Observable<List<Location>> locations = service.getDistinctLocations(newArrayList("location1", "location2"));
+        TestSubscriber<List<Location>> probe = new TestSubscriber<>();
+
+        locations.subscribe(probe);
+
+        probe.assertNoErrors();
+        probe.assertValue(newArrayList(
+                new Location("location1", newArrayList(
+                        new Venue("venue1", "/venue1Url"),
+                        new Venue("venue2", "/venue2Url"),
+                        new Venue("venue3", "/venue3Url"),
+                        new Venue("venue4", "/venue4Url"),
+                        new Venue("venue5", "/venue5Url"),
+                        new Venue("venue6", "/venue6Url"))),
+                new Location("location2", newArrayList(
+                        new Venue("venue7", "/venue7Url"),
+                        new Venue("venue8", "/venue8Url"),
+                        new Venue("venue9", "/venue9Url")))
+        ));
+    }
+
+    @Test
     public void getEventsForVenue() {
         InputStream allLocations = readResource("eventsForVenue.html");
         when(httpGateway.downloadWebPage(anyString()))
@@ -140,6 +173,38 @@ public class TestBiletMasterService {
     //TODO: handle & test for missing Event.artist & Event.room & Event.date
 
     //TODO: try hamcrest for UT
+
+    @Test
+    public void getEventsForLocation() {
+        Location loc = new Location("test", newArrayList(new Venue("v1", "url1"),new Venue("v2", "url2")));
+
+        when(httpGateway.downloadWebPage(Mockito.anyString())).thenReturn(
+                Observable.just(readResource("eventsForVenue1.html")),
+                Observable.just(readResource("eventsForVenue2.html"))
+        );
+
+        TestSubscriber<List<Event>> probe = new TestSubscriber<>();
+
+      //  TestScheduler newThread =
+
+        Observable
+                .just(loc)
+                .flatMap(location -> service.getEventsForLocation(location))
+                .subscribe(probe);
+
+
+        probe.assertNoErrors();
+
+        //assert the next event containts contents of all lists
+        List<Event> events = probe.getOnNextEvents().get(0);
+
+        //first list
+        Assert.assertEquals("Unexpected title", "event1", events.get(0).getName());
+        Assert.assertEquals("Unexpected artist", "artist1", events.get(0).getArtist());
+        //second list
+        Assert.assertEquals("Unexpected title", "event2", events.get(1).getName());
+        Assert.assertEquals("Unexpected artist", "artist2", events.get(1).getArtist());
+    }
 
     private InputStream readResource(String res) {
         return this.getClass().getClassLoader().getResourceAsStream(res);

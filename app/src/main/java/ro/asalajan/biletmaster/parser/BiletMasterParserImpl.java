@@ -108,8 +108,18 @@ public class BiletMasterParserImpl implements BiletMasterParser {
 
     private String parseMonth(String monthName) {
         switch (monthName) {
+            case "IAN": return "01";
+            case "FEB": return "02";
+            case "MAR": return "03";
             case "APR": return "04";
-
+            case "MAI": return "05";
+            case "IUN": return "06";
+            case "IUL": return "07";
+            case "AUG": return "08";
+            case "SEP": return "09";
+            case "OCT": return "10";
+            case "NOI": return "11";
+            case "DEC": return "12";
             default: throw new IllegalStateException("Cannot parse month: " + monthName);
         }
     }

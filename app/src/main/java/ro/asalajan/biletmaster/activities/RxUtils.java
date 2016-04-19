@@ -1,6 +1,9 @@
 package ro.asalajan.biletmaster.activities;
 
+import java.util.concurrent.Executors;
+
 import rx.Observable;
+import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
@@ -42,5 +45,7 @@ public class RxUtils {
             return ( (Observable) observable).observeOn(Schedulers.computation());
         }
     };
+
+    public static Scheduler customScheduler = Schedulers.from(Executors.newFixedThreadPool(2));
 
 }

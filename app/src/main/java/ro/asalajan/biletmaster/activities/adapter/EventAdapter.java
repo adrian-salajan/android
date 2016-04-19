@@ -1,4 +1,4 @@
-package ro.asalajan.biletmaster.activities;
+package ro.asalajan.biletmaster.activities.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
