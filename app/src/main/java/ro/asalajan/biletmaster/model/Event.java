@@ -10,15 +10,17 @@ public class Event {
 
     private String name;
     private String artist;
+    private String room;
     private Optional<LocalDateTime> dateTime;
 
     private boolean ticketsAvailable;
     private String url;
 
-    public Event(String name, String artist, Optional<LocalDateTime> dateTime,
+    public Event(String name, String artist, String room, Optional<LocalDateTime> dateTime,
                  boolean ticketsAvailable, String url) {
         this.name = name;
         this.artist = artist;
+        this.room = room;
         this.dateTime = dateTime;
         this.ticketsAvailable = ticketsAvailable;
         this.url = url;
@@ -32,6 +34,10 @@ public class Event {
         return artist;
     }
 
+    public String getRoom() {
+        return room;
+    }
+
     public Optional<LocalDateTime> getDateTime() {
         return dateTime;
     }
@@ -43,12 +49,13 @@ public class Event {
         Event event = (Event) o;
         return Objects.equals(name, event.name) &&
                 Objects.equals(artist, event.artist) &&
+                Objects.equals(room, event.room) &&
                 Objects.equals(dateTime, event.dateTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, artist, dateTime);
+        return Objects.hash(name, artist, room, dateTime);
     }
 
     @Override
@@ -56,9 +63,7 @@ public class Event {
         return "Event{" +
                 "name='" + name + '\'' +
                 ", artist='" + artist + '\'' +
-                ", dateTime=" + dateTime +
-                ", ticketsAvailable=" + ticketsAvailable +
-                ", url='" + url + '\'' +
+                ", room='" + room + '\'' +
                 '}';
     }
 }

@@ -148,6 +148,54 @@ public class TestBiletMasterService {
     }
 
     @Test
+    public void readFullEventInfo() {
+        InputStream fullEvent = readResource("fullEvent.html");
+        when(httpGateway.downloadWebPage(anyString()))
+                .thenReturn(Observable.<InputStream>just(fullEvent));
+
+        Observable<List<Event>> events = service.getEventsForVenue(new Venue("asd", "url"));
+
+        TestSubscriber<List<Event>> probe = new TestSubscriber<>();
+
+        events.subscribe(probe);
+
+        probe.assertNoErrors();
+        List<Event> result = probe.getOnNextEvents().get(0);
+
+        Assert.assertEquals("Unexpected number of events", 1, result.size());
+
+        Event event = result.get(0);
+        Assert.assertEquals("Unexpected title", "title", event.getName());
+        Assert.assertEquals("Unexpected artist", "artist", event.getArtist());
+        Assert.assertEquals("Unexpected room", "room", event.getRoom());
+    }
+
+    @Test
+    public void readFullEventWithMissingDate() {
+        InputStream fullEvent = readResource("eventNoDate.html");
+        when(httpGateway.downloadWebPage(anyString()))
+                .thenReturn(Observable.<InputStream>just(fullEvent));
+
+        Observable<List<Event>> events = service.getEventsForVenue(new Venue("asd", "url"));
+
+        TestSubscriber<List<Event>> probe = new TestSubscriber<>();
+
+        events.subscribe(probe);
+
+        probe.assertNoErrors();
+        List<Event> result = probe.getOnNextEvents().get(0);
+
+        Assert.assertEquals("Unexpected number of events", 1, result.size());
+
+        Event event = result.get(0);
+        Assert.assertEquals("Unexpected title", "title", event.getName());
+        Assert.assertEquals("Unexpected artist", "artist", event.getArtist());
+        Assert.assertEquals("Unexpected room", "room", event.getRoom());
+
+        Assert.assertFalse(event.getDateTime().isPresent());
+    }
+
+    @Test
     public void getEventsWithDateForVenue() {
         InputStream allLocations = readResource("eventsForVenue.html");
         when(httpGateway.downloadWebPage(anyString()))

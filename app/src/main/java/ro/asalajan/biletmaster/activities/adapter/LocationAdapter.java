@@ -36,8 +36,8 @@ public class LocationAdapter extends ArrayAdapter<Location> {
         return convertView;
     }
 
-//    @Override
-//    public View getDropDownView(int position, View convertView, ViewGroup parent) {
-//        return getView(position, convertView, parent);
-//    }
+    @Override
+    public View getDropDownView(int position, View convertView, ViewGroup parent) {
+        return getView(position, convertView, parent);
+    }
 }

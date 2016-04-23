@@ -18,6 +18,7 @@ import java.util.List;
 import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.model.Venue;
+import ro.asalajan.biletmaster.services.BiletMasterService;
 
 public class BiletMasterParserImpl implements BiletMasterParser {
 
@@ -45,17 +46,25 @@ public class BiletMasterParserImpl implements BiletMasterParser {
     }
 
     private Event parseEvent(Element eventContainer) {
-        Elements _event = eventContainer.getElementsByClass("title");
-        Elements _artist = eventContainer.getElementsByClass("artist");
-        if (_event.isEmpty()) {
+            Elements _event = eventContainer.getElementsByClass("title");
+            Elements _artist = eventContainer.getElementsByClass("artist");
+            Elements _room = eventContainer.getElementsByClass("room");
+            if (_event.isEmpty()) {
+                return null;
+            }
+            Element dateContainer = getDateContainer(eventContainer);
+            //not sure if year imporant yet
+            Optional<LocalDateTime> date = parseDate(dateContainer, DateUtils.getCurrentYear());
+            // TODO parse tickets availability & url
+            return new Event(getText(_event), getText(_artist), getText(_room), date, false, "url");
+
+    }
+
+    private String getText(Elements e) {
+        if (e == null) {
             return null;
         }
-        Element dateContainer = getDateContainer(eventContainer);
-        //not sure if year imporant yet
-        Optional<LocalDateTime> date = parseDate(dateContainer, DateUtils.getCurrentYear());
-        // TODO parse tickets availability & url
-        return new Event(_event.text(), _artist.text(), date, false, "url");
-
+        return e.text();
     }
 
     private Element getDateContainer(Element eventContainer) {
@@ -65,23 +74,27 @@ public class BiletMasterParserImpl implements BiletMasterParser {
     }
 
     private Optional<LocalDateTime> parseDate(Element dateContainer, int year) {
-        Element datePart = dateContainer.getElementsByClass("ajanlo-date").first();
+        String newDate = new String(DATE_FORMAT);
+        try {
+            Element datePart = dateContainer.getElementsByClass("ajanlo-date").first();
 
-        Element _month = getMonth(datePart);
-        Element _day = getDay(datePart);
+            Element _month = getMonth(datePart);
+            Element _day = getDay(datePart);
 
-        Element timePart = dateContainer.getElementsByClass("dateplate").first();
-        Element _time = getTime(timePart);
+            Element timePart = dateContainer.getElementsByClass("dateplate").first();
+            Element _time = getTime(timePart);
 
-        if (_month == null || _day == null || _time == null) {
+            if (_month == null || _day == null || _time == null) {
+                return Optional.absent();
+            }
+
+            newDate = newDate.replace("dd", _day.text());
+            newDate = newDate.replace("MM", parseMonth(_month.text()));
+            newDate = newDate.replace("yyyy", String.valueOf(year));
+            newDate = newDate.replace("HH:mm", _time.text());
+        } catch (NullPointerException e) {
             return Optional.absent();
         }
-
-        String newDate = new String(DATE_FORMAT);
-        newDate = newDate.replace("dd", _day.text());
-        newDate = newDate.replace("MM", parseMonth(_month.text()));
-        newDate = newDate.replace("yyyy", String.valueOf(year));
-        newDate = newDate.replace("HH:mm", _time.text());
         return Optional.fromNullable(FMT.parseLocalDateTime(newDate));
 
     }

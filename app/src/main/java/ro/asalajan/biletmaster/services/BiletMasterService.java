@@ -104,7 +104,8 @@ public class BiletMasterService {
 
         //TODO recover from parse exception
         return httpGateway.downloadWebPage(ROOT + venue.getUrl())
-                .map(data -> parser.parseEvents(data));
+                .map(data -> parser.parseEvents(data))
+                .onErrorResumeNext(Observable.empty());
     }
 
     private Func1<? super InputStream, List<Location>> parseLocations =
