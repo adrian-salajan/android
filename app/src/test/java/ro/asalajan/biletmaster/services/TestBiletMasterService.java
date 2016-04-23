@@ -144,7 +144,7 @@ public class TestBiletMasterService {
         Assert.assertEquals("Unexpected artist", "artist1", result.get(0).getArtist());
 
         Assert.assertEquals("Unexpected title", "Aproape de tine", result.get(1).getName());
-        Assert.assertEquals("Unexpected artist", "", result.get(1).getArtist());
+        Assert.assertEquals("Unexpected artist", null, result.get(1).getArtist());
     }
 
     @Test

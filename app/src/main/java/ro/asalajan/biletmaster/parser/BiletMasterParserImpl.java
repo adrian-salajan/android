@@ -64,7 +64,12 @@ public class BiletMasterParserImpl implements BiletMasterParser {
         if (e == null) {
             return null;
         }
-        return e.text();
+
+        String text = e.text();
+        if (text.isEmpty()) {
+            return null;
+        }
+        return text;
     }
 
     private Element getDateContainer(Element eventContainer) {

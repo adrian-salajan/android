@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+  <ImageView android:id="@+id/calendarIcon"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:src="#555"
+      android:maxWidth="@dimen/calendar_icon"
+      android:maxHeight="@dimen/calendar_icon"
+      android:minWidth="@dimen/calendar_icon"
+      android:minHeight="@dimen/calendar_icon"
+      android:background="@color/colorAccent"
+      />
+
+    <TextView  android:id = "@+id/eventName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/calendarIcon"
+        android:textSize="@dimen/event_name"
+        android:textStyle="bold"
+        android:text="Monsters of Rock"
+        />
+
+    <TextView android:id = "@+id/eventArtist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/calendarIcon"
+        android:layout_below="@id/eventName"
+        android:text="Metallica, AC/DC"
+        android:textSize="@dimen/event_artist"
+       />
+
+
+
+</RelativeLayout>
+<!--
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id = "@+id/eventName"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id = "@+id/eventArtist"/>
+
+</LinearLayout>
+
+        -->
+
