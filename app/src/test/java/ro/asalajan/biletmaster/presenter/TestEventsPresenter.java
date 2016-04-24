@@ -14,7 +14,7 @@ import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.model.Venue;
 import ro.asalajan.biletmaster.presenters.EventsPresenter;
 import ro.asalajan.biletmaster.services.BiletMasterHelper;
-import ro.asalajan.biletmaster.services.BiletMasterService;
+import ro.asalajan.biletmaster.services.BiletMasterServiceImpl;
 import ro.asalajan.biletmaster.view.EventsView;
 import rx.Observable;
 import rx.Scheduler;
@@ -34,7 +34,7 @@ public class TestEventsPresenter {
     private EventsPresenter presenter;
 
 
-    private BiletMasterService service;
+    private BiletMasterServiceImpl service;
     private Location location;
     private Location location2;
 
@@ -77,7 +77,7 @@ public class TestEventsPresenter {
 
     @Before
     public void setup() {
-        service = mock(BiletMasterService.class);
+        service = mock(BiletMasterServiceImpl.class);
         location = new Location("location1", newArrayList(
                 new Venue("venue1", "venue1Url"))
         );

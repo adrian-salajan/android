@@ -1,7 +1,5 @@
 package ro.asalajan.biletmaster.services;
 
-import android.util.Log;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -18,6 +16,9 @@ public class HttpGateway {
     private OkHttpClient httpClient = new OkHttpClient();
 
     public Observable<InputStream> downloadWebPage(String url) {
+        return download(url);
+    }
+    private Observable<InputStream> download(String url) {
         Request request = new Request.Builder()
                 .get()
                 .url(url)

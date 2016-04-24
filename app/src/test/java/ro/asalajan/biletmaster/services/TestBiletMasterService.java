@@ -13,7 +13,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
@@ -21,10 +20,8 @@ import ro.asalajan.biletmaster.model.Venue;
 import ro.asalajan.biletmaster.parser.BiletMasterParser;
 import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
 import rx.Observable;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.observers.TestSubscriber;
-import rx.schedulers.Schedulers;
-import rx.schedulers.TestScheduler;
+import rx.subjects.PublishSubject;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Matchers.anyString;
@@ -36,15 +33,46 @@ public class TestBiletMasterService {
     private BiletMasterParser parser;
     private HttpGateway httpGateway;
 
-    BiletMasterService service;
+    BiletMasterServiceImpl service;
 
     private DateTimeFormatter fmt = DateTimeFormat.forPattern("dd.MM.yyyy HH:mm");
+
+
+//    static {
+//        RxJavaPlugins.getInstance().registerSchedulersHook(new RxJavaSchedulersHook() {
+//            @Override
+//            public Scheduler getIOScheduler() {
+//                return Schedulers.immediate();
+//            }
+//
+//            @Override
+//            public Scheduler getComputationScheduler() {
+//                return Schedulers.immediate();
+//            }
+//
+//            @Override
+//            public Scheduler getNewThreadScheduler() {
+//                return Schedulers.immediate();
+//            }
+//
+//
+//
+//        });
+//
+//        RxAndroidPlugins.getInstance().registerSchedulersHook(new RxAndroidSchedulersHook() {
+//            @Override
+//            public Scheduler getMainThreadScheduler() {
+//                return Schedulers.immediate();
+//            }
+//
+//        });
+//    }
 
     @Before
     public void setup() throws UnsupportedEncodingException {
         parser = new BiletMasterParserImpl();
         httpGateway = mock(HttpGateway.class);
-        service = new BiletMasterService(parser, httpGateway);
+        service = new BiletMasterServiceImpl(parser, httpGateway);
     }
 
     @Test
@@ -70,6 +98,35 @@ public class TestBiletMasterService {
                 new Location("c", Collections.emptyList())
         ));
     }
+
+//    @Test
+//    public void getLocationsAfterError() throws UnsupportedEncodingException {
+//        ByteArrayInputStream webpage = new ByteArrayInputStream(
+//                (   "<div class=\"stacktitle\">a</div>" +
+//                        "<div class=\"stacktitle\">b</div>" +
+//                        "<p><div class=\"stacktitle\">c</div></p>").getBytes("UTF-8")
+//        );
+//
+//        PublishSubject<InputStream> subject = PublishSubject.create();
+//
+//        when(httpGateway.downloadWebPage(anyString()))
+//               // .thenReturn(Observable.<InputStream>just(webpage));
+//        .thenReturn(subject);
+//
+//        Observable<List<Location>> locations = service.getLocations();
+//        TestSubscriber<List<Location>> probe = new TestSubscriber<>();
+//        locations.subscribe(probe);
+//
+//        subject.onError(new RuntimeException("test exception"));
+//        subject.onNext(webpage);
+//
+//        probe.assertNoErrors();
+//        probe.assertValue(newArrayList(
+//                new Location("a", Collections.emptyList()),
+//                new Location("b", Collections.emptyList()),
+//                new Location("c", Collections.emptyList())
+//        ));
+//    }
 
     @Test
     public void getLocationsWithVenues() throws UnsupportedEncodingException {
@@ -232,8 +289,6 @@ public class TestBiletMasterService {
         );
 
         TestSubscriber<List<Event>> probe = new TestSubscriber<>();
-
-      //  TestScheduler newThread =
 
         Observable
                 .just(loc)

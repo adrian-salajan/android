@@ -2,10 +2,10 @@ package ro.asalajan.biletmaster.presenters;
 
 import android.util.Log;
 
-import ro.asalajan.biletmaster.activities.RxUtils;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.services.BiletMasterHelper;
 import ro.asalajan.biletmaster.services.BiletMasterService;
+import ro.asalajan.biletmaster.services.BiletMasterServiceImpl;
 import ro.asalajan.biletmaster.view.EventsView;
 import rx.Observable;
 import rx.Subscription;
@@ -39,6 +39,7 @@ public class EventsPresenter implements Presenter<EventsView>  {
 
     private void onSelect(Observable<Location> selected) {
         eventsSub = selected.flatMap(location -> biletService.getEventsForLocation(location))
+                .doOnNext(events1 -> Log.d(">>>>", "next"))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(events -> view.setEvents(events),
                         t -> Log.d("activity events select", t.toString()));

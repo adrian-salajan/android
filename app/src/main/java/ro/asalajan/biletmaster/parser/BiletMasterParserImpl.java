@@ -18,7 +18,6 @@ import java.util.List;
 import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.model.Venue;
-import ro.asalajan.biletmaster.services.BiletMasterService;
 
 public class BiletMasterParserImpl implements BiletMasterParser {
 

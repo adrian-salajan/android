@@ -2,7 +2,6 @@ package ro.asalajan.biletmaster.activities;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -22,16 +21,15 @@ import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
 import ro.asalajan.biletmaster.presenters.EventsPresenter;
 import ro.asalajan.biletmaster.services.BiletMasterService;
+import ro.asalajan.biletmaster.services.BiletMasterServiceImpl;
+import ro.asalajan.biletmaster.services.CachedBiletMasterService;
 import ro.asalajan.biletmaster.services.HttpGateway;
 import ro.asalajan.biletmaster.view.EventsView;
 import rx.Observable;
-import rx.Observer;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.observers.Observers;
 
 public class EventsActivity extends Activity implements EventsView {
 
-    private BiletMasterService biletService = new BiletMasterService(new BiletMasterParserImpl(), new HttpGateway());
+    private BiletMasterService biletService;
 
     EventsPresenter presenter;
 
@@ -44,6 +42,11 @@ public class EventsActivity extends Activity implements EventsView {
         super.onCreate(savedInstanceState);
         JodaTimeAndroid.init(this);
         setContentView(R.layout.activity_events);
+
+        biletService = new CachedBiletMasterService(
+                new BiletMasterServiceImpl(new BiletMasterParserImpl(), new HttpGateway()),
+                new AndroidFileCache(getExternalCacheDir()));
+
 
         createLocationSpinner();
         createEventsFromSpinnerSelection();
