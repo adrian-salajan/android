@@ -113,7 +113,7 @@ public class TestBiletMasterService {
 //               // .thenReturn(Observable.<InputStream>just(webpage));
 //        .thenReturn(subject);
 //
-//        Observable<List<Location>> locations = service.getLocations();
+//        Observable<List<Location>> locations = cachedService.getLocations();
 //        TestSubscriber<List<Location>> probe = new TestSubscriber<>();
 //        locations.subscribe(probe);
 //
@@ -186,7 +186,8 @@ public class TestBiletMasterService {
         when(httpGateway.downloadWebPage(anyString()))
                 .thenReturn(Observable.<InputStream>just(allLocations));
 
-        Observable<List<Event>> events = service.getEventsForVenue(new Venue("asd", "url"));
+        Venue venue = new Venue("asd", "url");
+        Observable<List<Event>> events = service.getEventsForVenue(venue);
 
         TestSubscriber<List<Event>> probe = new TestSubscriber<>();
 
@@ -199,9 +200,11 @@ public class TestBiletMasterService {
 
         Assert.assertEquals("Unexpected title", "Aproape de tine", result.get(0).getName());
         Assert.assertEquals("Unexpected artist", "artist1", result.get(0).getArtist());
+        Assert.assertEquals("Unexpected venue", venue, result.get(0).getVenue());
 
         Assert.assertEquals("Unexpected title", "Aproape de tine", result.get(1).getName());
         Assert.assertEquals("Unexpected artist", null, result.get(1).getArtist());
+        Assert.assertEquals("Unexpected venue", venue, result.get(1).getVenue());
     }
 
     @Test

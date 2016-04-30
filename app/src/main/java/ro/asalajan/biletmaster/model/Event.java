@@ -12,9 +12,15 @@ public class Event {
     private String artist;
     private String room;
     private Optional<LocalDateTime> dateTime;
+    private Venue venue;
 
     private boolean ticketsAvailable;
     private String url;
+
+    public Event(String name, String artist, String room, Optional<LocalDateTime> dateTime, boolean ticketsAvailable, String url,  Venue venue) {
+        this(name, artist, room, dateTime, ticketsAvailable, url);
+        this.venue = venue;
+    }
 
     public Event(String name, String artist, String room, Optional<LocalDateTime> dateTime,
                  boolean ticketsAvailable, String url) {
@@ -42,6 +48,14 @@ public class Event {
         return dateTime;
     }
 
+    public Venue getVenue() {
+        return venue;
+    }
+
+    public void setVenue(Venue venue) {
+        this.venue = venue;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -50,12 +64,14 @@ public class Event {
         return Objects.equals(name, event.name) &&
                 Objects.equals(artist, event.artist) &&
                 Objects.equals(room, event.room) &&
-                Objects.equals(dateTime, event.dateTime);
+                Objects.equals(dateTime, event.dateTime) &&
+                Objects.equals(venue, event.venue);
+
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, artist, room, dateTime);
+        return Objects.hash(name, artist, room, dateTime, venue);
     }
 
     @Override
@@ -64,6 +80,7 @@ public class Event {
                 "name='" + name + '\'' +
                 ", artist='" + artist + '\'' +
                 ", room='" + room + '\'' +
+                ", venue=" + venue +
                 '}';
     }
 }

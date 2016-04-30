@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 public class TestCachedBiletMasterService {
 
 
-    BiletMasterService service;
+    BiletMasterService cachedService;
     boolean gotFromCache = false;
 
     private Location loc;
@@ -57,24 +57,26 @@ public class TestCachedBiletMasterService {
 
             }
         };
-        loc = new Location("test", newArrayList(new Venue("v1", "url1"),new Venue("v2", "url2")));
+        Venue venue1 = new Venue("v1", "url1");
+        Venue venue2 = new Venue("v2", "url2");
+        loc = new Location("test", newArrayList(venue1, venue2));
         innerService = mock(BiletMasterService.class);
         expected = Lists.newArrayList(
-                new Event("event1", "artist1", "room1", Optional.absent(), false, null),
-                new Event("event2", "artist2", "room2", Optional.absent(), false, null)
+                new Event("event1", "artist1", "room1", Optional.absent(), false, null, venue1),
+                new Event("event2", "artist2", "room2", Optional.absent(), false, null, venue2)
         );
         when(innerService.getEventsForLocation(Mockito.eq(loc)))
                 .thenReturn(Observable.just(expected));
-        service = new CachedBiletMasterService(innerService, cache);
+        cachedService = new CachedBiletMasterService(innerService, cache);
     }
 
     @Test
-    public void getEventsForLocation() {
+    public void givenLocationQueryEventsWhereCached() {
         TestSubscriber<List<Event>> probe = new TestSubscriber<>();
 
         Observable
                 .just(loc, loc)
-                .flatMap(location -> service.getEventsForLocation(location))
+                .flatMap(location -> cachedService.getEventsForLocation(location))
                 .subscribe(probe);
 
 

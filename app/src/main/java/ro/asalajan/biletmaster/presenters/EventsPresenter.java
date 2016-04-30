@@ -42,7 +42,7 @@ public class EventsPresenter implements Presenter<EventsView>  {
                 .doOnNext(events1 -> Log.d(">>>>", "next"))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(events -> view.setEvents(events),
-                        t -> Log.d("activity events select", t.toString()));
+                        t -> {Log.d("!!!!!!!!!!!!!!!!!!!!!!!!", t.toString()); t.printStackTrace();});
     }
 
     @Override

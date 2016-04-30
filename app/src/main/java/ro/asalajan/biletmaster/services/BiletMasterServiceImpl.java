@@ -84,12 +84,16 @@ public class BiletMasterServiceImpl implements BiletMasterService {
     }
 
     public Observable<List<Event>> getEventsForLocation(Location location) {
-        List<Observable<List<Event>>> venues = new ArrayList<>();
+        List<Observable<List<Event>>> events = new ArrayList<>();
         for (Venue v : location.getVenues()) {
-            venues.add(Observable.just(v).flatMap(venue -> getEventsForVenue(venue)));
+            events.add(
+                    Observable.just(v)
+                            .flatMap(venue -> getEventsForVenue(venue))
+
+             );
         }
         Log.d("biletService", "!!!!!!!!!!!! query-ing for " + location.getLocation());
-        return Observable.zip(venues, new FuncN<List<Event>>() {
+        return Observable.zip(events, new FuncN<List<Event>>() {
             @Override
             public List<Event> call(Object... args) {
                 List<Event> allEvents = new ArrayList<Event>();
@@ -116,6 +120,12 @@ public class BiletMasterServiceImpl implements BiletMasterService {
 
         return httpGateway.downloadWebPage(ROOT + venue.getUrl())
                 .map(data -> parser.parseEvents(data))
+                .map(ev -> {
+                    for (Event e : ev) {
+                        e.setVenue(venue);
+                    }
+                    return ev;
+                })
                 .onErrorResumeNext(Observable.empty());
     }
 

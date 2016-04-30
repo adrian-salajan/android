@@ -33,9 +33,9 @@ public class AndroidFileCache implements DataCache {
         cache = new File(externalCacheDir, "cache");
         try {
             initNewCache();
-            Log.e(name, ">>>> created cache file: " + cache.getAbsolutePath());
+            Log.d(name, ">>>> created cache file: " + cache.getAbsolutePath());
         } catch (IOException e) {
-            Log.d(name, e.toString());
+            Log.e(name, e.toString());
         }
         type = new TypeToken<List<CachedBiletMasterService.SerializableEvent>>() {
         }.getType();
@@ -45,7 +45,7 @@ public class AndroidFileCache implements DataCache {
         if (!cache.createNewFile()) {
             clear();
             cache.createNewFile();
-            Log.e(name, "init new cache");
+            Log.d(name, "init new cache");
         }
     }
 

@@ -10,7 +10,7 @@ public class EventHolder {
 
     private View name;
     private View artist;
-    private View room;
+    private View venue;
 
     private View calendarIcon;
 
@@ -26,8 +26,8 @@ public class EventHolder {
         this.artist = artist;
     }
 
-    public void setRoom(View room) {
-        this.room = room;
+    public void setVenue(View venue) {
+        this.venue = venue;
     }
 
     public void setCalendarIcon(ImageView calendarIcon) {
@@ -46,9 +46,9 @@ public class EventHolder {
         }
     }
 
-    public void updateRoom(String text) {
-        if (room != null) {
-            ((TextView)room).setText(text);
+    public void updateVenue(String text) {
+        if (venue != null) {
+            ((TextView) venue).setText(text);
         }
     }
 }

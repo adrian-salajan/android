@@ -2,7 +2,6 @@ package ro.asalajan.biletmaster.activities.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,10 +17,9 @@ import ro.asalajan.biletmaster.model.Event;
 public class EventAdapter extends ArrayAdapter<Event> {
 
     private static String name = "EventAdapter";
-    private static final int LAYOUT_COUNT = 3;
-    private static final int LAYOUT_FULL = 1;
-    private static final int LAYOUT_NO_ARTIST = 2;
-    private static final int LAYOUT_NO_ROOM = 3;
+    private static final int LAYOUT_COUNT = 2;
+    private static final int LAYOUT_FULL = 0;
+    private static final int LAYOUT_NO_ARTIST = 1;
 
 
     public EventAdapter(Context context, List<Event> events) {
@@ -39,9 +37,6 @@ public class EventAdapter extends ArrayAdapter<Event> {
         if (event.getArtist() == null) {
             return LAYOUT_NO_ARTIST;
         }
-        if (event.getRoom() == null) {
-            return LAYOUT_NO_ROOM;
-        }
         return LAYOUT_FULL;
     }
 
@@ -55,7 +50,7 @@ public class EventAdapter extends ArrayAdapter<Event> {
             EventHolder holder = (EventHolder) convertView.getTag();
             holder.updateName(event.getName());
             holder.updateArtist(event.getArtist());
-            holder.updateRoom(event.getRoom());
+            holder.updateVenue(event.getVenue().getName());
         }
         return convertView;
     }
@@ -67,21 +62,14 @@ public class EventAdapter extends ArrayAdapter<Event> {
         if (layout == LAYOUT_NO_ARTIST) {
             view = LayoutInflater.from(getContext())
                     .inflate(R.layout.event_view_no_artist, parent, false);
-
-            holder.setRoom(init(R.id.eventRoom, event.getRoom(), view));
-        } else if (layout == LAYOUT_NO_ROOM) {
-            view = LayoutInflater.from(getContext())
-                    .inflate(R.layout.event_view_no_room, parent, false);
-            holder.setArtist(init(R.id.eventArtist, event.getArtist(), view));
         } else {
             view = LayoutInflater.from(getContext())
                     .inflate(R.layout.event_view_all_fields, parent, false);
 
             holder.setArtist(init(R.id.eventArtist, event.getArtist(), view));
-            holder.setRoom(init(R.id.eventRoom, event.getRoom(), view));
         }
         holder.setName(init(R.id.eventName, event.getName(), view));
-
+        holder.setVenue(init(R.id.eventVenue, event.getVenue().getName(), view));
         holder.setCalendarIcon((ImageView) view.findViewById(R.id.calendarIcon));
 
         view.setTag(holder);

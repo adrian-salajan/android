@@ -56,12 +56,22 @@ public class CachedBiletMasterService implements BiletMasterService  {
         private String artist;
         private String room;
         private String datetime;
+        private Venue venue;
 
         public SerializableEvent(String name, String artist, String room, String datetime) {
             this.name = name;
             this.artist = artist;
             this.room = room;
             this.datetime = datetime;
+        }
+
+        public SerializableEvent(Event event) {
+            this.name = event.getName();
+            this.artist = event.getArtist();
+            this.room = event.getRoom();
+            LocalDateTime dt = event.getDateTime().orNull();
+            this.datetime = dt == null ? null : dt.toString();
+            this.venue = event.getVenue();
         }
 
         public String getName() {
@@ -78,6 +88,10 @@ public class CachedBiletMasterService implements BiletMasterService  {
 
         public String getDatetime() {
             return datetime;
+        }
+
+        public Venue getVenue() {
+            return venue;
         }
     }
 
@@ -98,8 +112,8 @@ public class CachedBiletMasterService implements BiletMasterService  {
     }
 
     private SerializableEvent fromEvent(Event e) {
-        LocalDateTime dateTime = e.getDateTime().orNull();
-        return new SerializableEvent(e.getName(), e.getArtist(), e.getRoom(), dateTime == null ? null : dateTime.toString());
+        //return new SerializableEvent(e.getName(), e.getArtist(), e.getRoom(), dateTime == null ? null : dateTime.toString());
+        return new SerializableEvent(e);
     }
 
     private Event fromSerialized(SerializableEvent e) {
@@ -107,7 +121,9 @@ public class CachedBiletMasterService implements BiletMasterService  {
         if (e.getDatetime() != null) {
             dateTime = LocalDateTime.parse(e.getDatetime());
         }
-        return new Event(e.getName(), e.getArtist(), e.getRoom(), Optional.fromNullable(dateTime), false, null);
+        Event event = new Event(e.getName(), e.getArtist(), e.getRoom(), Optional.fromNullable(dateTime), false, null);
+        event.setVenue(e.getVenue());
+        return event;
     }
 
 }

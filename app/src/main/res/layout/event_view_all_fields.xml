@@ -33,13 +33,13 @@
        />
 
 
-    <TextView android:id = "@+id/eventRoom"
+    <TextView android:id = "@+id/eventVenue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/calendarIcon"
         android:layout_below="@id/eventArtist"
         android:text="National Arena"
-        android:textSize="@dimen/event_room"
+        android:textSize="@dimen/event_venue"
         />
 
 
