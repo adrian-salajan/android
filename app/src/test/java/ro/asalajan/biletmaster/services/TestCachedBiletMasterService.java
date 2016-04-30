@@ -1,6 +1,7 @@
 package ro.asalajan.biletmaster.services;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import junit.framework.Assert;
@@ -18,6 +19,9 @@ import java.util.Map;
 import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.model.Venue;
+import ro.asalajan.biletmaster.services.biletmaster.BiletMasterService;
+import ro.asalajan.biletmaster.services.biletmaster.CachedBiletMasterService;
+import ro.asalajan.biletmaster.services.cache.DataCache;
 import rx.Observable;
 import rx.observers.TestSubscriber;
 
@@ -50,6 +54,11 @@ public class TestCachedBiletMasterService {
             public Object get(int id) {
                 gotFromCache = true;
                 return cache.get(id);
+            }
+
+            @Override
+            public ImmutableMap<Integer, Object> getContents() {
+                return null;
             }
 
             @Override

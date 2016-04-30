@@ -1,4 +1,4 @@
-package ro.asalajan.biletmaster.services;
+package ro.asalajan.biletmaster.services.http;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +18,7 @@ public class HttpGateway {
     public Observable<InputStream> downloadWebPage(String url) {
         return download(url);
     }
+
     private Observable<InputStream> download(String url) {
         Request request = new Request.Builder()
                 .get()

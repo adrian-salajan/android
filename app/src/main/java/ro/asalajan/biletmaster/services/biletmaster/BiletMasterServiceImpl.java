@@ -1,4 +1,4 @@
-package ro.asalajan.biletmaster.services;
+package ro.asalajan.biletmaster.services.biletmaster;
 
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -6,30 +6,20 @@ import android.util.Log;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Vector;
 
-import ro.asalajan.biletmaster.activities.RxUtils;
 import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.model.Venue;
 import ro.asalajan.biletmaster.parser.BiletMasterParser;
+import ro.asalajan.biletmaster.services.http.HttpGateway;
 import rx.Observable;
-import rx.Observer;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action2;
-import rx.functions.Func0;
 import rx.functions.Func1;
 import rx.functions.FuncN;
-import rx.observers.Observers;
-import rx.schedulers.Schedulers;
 
 public class BiletMasterServiceImpl implements BiletMasterService {
 

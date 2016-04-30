@@ -19,9 +19,10 @@ import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.model.Venue;
 import ro.asalajan.biletmaster.parser.BiletMasterParser;
 import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
+import ro.asalajan.biletmaster.services.biletmaster.BiletMasterServiceImpl;
+import ro.asalajan.biletmaster.services.http.HttpGateway;
 import rx.Observable;
 import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Matchers.anyString;

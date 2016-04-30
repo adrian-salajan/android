@@ -16,12 +16,12 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import ro.asalajan.biletmaster.model.Event;
-import ro.asalajan.biletmaster.services.CachedBiletMasterService;
-import ro.asalajan.biletmaster.services.DataCache;
+import ro.asalajan.biletmaster.services.biletmaster.CachedBiletMasterService;
+import ro.asalajan.biletmaster.services.cache.DataCache;
 
-public class AndroidFileCache implements DataCache {
+public abstract class AndroidFileCache implements DataCache {
 
-    private final Type type;
+    //private final Type type;
     private File externalCacheDir;
     private Gson gson = new Gson();
 
@@ -37,8 +37,8 @@ public class AndroidFileCache implements DataCache {
         } catch (IOException e) {
             Log.e(name, e.toString());
         }
-        type = new TypeToken<List<CachedBiletMasterService.SerializableEvent>>() {
-        }.getType();
+      //  type = new TypeToken<List<CachedBiletMasterService.SerializableEvent>>() {
+     //   }.getType();
     }
 
     private void initNewCache() throws IOException {
@@ -76,7 +76,7 @@ public class AndroidFileCache implements DataCache {
 
             String data = reader.readLine();
             Log.d(name, "found cached data " + data);
-            List<Event> o = (List<Event>)gson.fromJson(data, type);
+            List<Event> o=null;// = gson.fromJson(data, type);
             Log.d(name, "deserialized data " + o);
             return o;
 

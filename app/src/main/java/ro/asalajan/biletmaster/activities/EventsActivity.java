@@ -20,10 +20,11 @@ import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
 import ro.asalajan.biletmaster.presenters.EventsPresenter;
-import ro.asalajan.biletmaster.services.BiletMasterService;
-import ro.asalajan.biletmaster.services.BiletMasterServiceImpl;
-import ro.asalajan.biletmaster.services.CachedBiletMasterService;
-import ro.asalajan.biletmaster.services.HttpGateway;
+import ro.asalajan.biletmaster.services.biletmaster.BiletMasterService;
+import ro.asalajan.biletmaster.services.biletmaster.BiletMasterServiceImpl;
+import ro.asalajan.biletmaster.services.biletmaster.CachedBiletMasterService;
+import ro.asalajan.biletmaster.services.cache.InMemoryDataCache;
+import ro.asalajan.biletmaster.services.http.HttpGateway;
 import ro.asalajan.biletmaster.view.EventsView;
 import rx.Observable;
 
@@ -36,6 +37,8 @@ public class EventsActivity extends Activity implements EventsView {
     private Spinner spinner;
     private LocationAdapter locationAdapter;
     private EventAdapter eventAdapter;
+    private FilePersistableCache<?> cache;
+    private String name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,19 +46,44 @@ public class EventsActivity extends Activity implements EventsView {
         JodaTimeAndroid.init(this);
         setContentView(R.layout.activity_events);
 
+        cache = new EventListCache(getExternalCacheDir());
+
         biletService = new CachedBiletMasterService(
-                new BiletMasterServiceImpl(new BiletMasterParserImpl(), new HttpGateway()),
-                new AndroidFileCache(getExternalCacheDir()));
+                            new BiletMasterServiceImpl(new BiletMasterParserImpl(), new HttpGateway()),
+                            cache
+        );
+        // new AndroidFileCache(getExternalCacheDir()));
 
 
         createLocationSpinner();
         createEventsFromSpinnerSelection();
 
         if (presenter == null) {  //TODO save state of the presenter!
-            Log.d("EventsActivity", "created new Presenter");
+            name = "EventsActivity";
+            cache.load();
             presenter = new EventsPresenter(biletService);
             presenter.setView(this);
+            Log.d(name, "onCreate: loaded cache, created new presenter");
+            Log.e(name, "onCreate:");
         }
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.e(name, "on restart:");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.e(name, "onResume:");
+    }
+
+    @Override
+    protected void onStop() {
+         super.onStop();
+        Log.e(name, "onStop:");
     }
 
     private void createLocationSpinner() {
@@ -130,8 +158,18 @@ public class EventsActivity extends Activity implements EventsView {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        Log.e(name, "on pause");
+        cache.save();
+        Log.d(name, "onStop: saved cache");
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.e(name, "on destroy");
         presenter.removeView();
+        Log.d(name, "onDestroy: removed view");
     }
 }

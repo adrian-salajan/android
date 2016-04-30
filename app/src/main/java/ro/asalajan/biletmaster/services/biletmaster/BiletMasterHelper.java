@@ -1,4 +1,4 @@
-package ro.asalajan.biletmaster.services;
+package ro.asalajan.biletmaster.services.biletmaster;
 
 import com.google.common.collect.Lists;
 

@@ -1,4 +1,4 @@
-package ro.asalajan.biletmaster.services;
+package ro.asalajan.biletmaster.services.biletmaster;
 
 import java.util.List;
 

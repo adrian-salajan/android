@@ -13,8 +13,8 @@ import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.model.Venue;
 import ro.asalajan.biletmaster.presenters.EventsPresenter;
-import ro.asalajan.biletmaster.services.BiletMasterHelper;
-import ro.asalajan.biletmaster.services.BiletMasterServiceImpl;
+import ro.asalajan.biletmaster.services.biletmaster.BiletMasterHelper;
+import ro.asalajan.biletmaster.services.biletmaster.BiletMasterServiceImpl;
 import ro.asalajan.biletmaster.view.EventsView;
 import rx.Observable;
 import rx.Scheduler;
@@ -85,8 +85,8 @@ public class TestEventsPresenter {
                 new Venue("venue2", "venue2Url"))
         );
 
-        viewLocations = new ArrayList<List<Location>>();
-        viewEvents = new ArrayList<List<Event>>();
+        viewLocations = new ArrayList<>();
+        viewEvents = new ArrayList<>();
     }
 
     @Test
