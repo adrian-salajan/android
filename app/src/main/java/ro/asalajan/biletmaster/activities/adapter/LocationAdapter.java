@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import org.jsoup.helper.StringUtil;
+
 import java.util.List;
 
 import ro.asalajan.biletmaster.R;
@@ -22,10 +24,10 @@ public class LocationAdapter extends ArrayAdapter<Location> {
         Location loc = getItem(position);
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext())
-                    .inflate(R.layout.location_view, parent, false);
+                    .inflate(R.layout.active_spinner_item, parent, false);
         }
 
-        TextView textView = (TextView) convertView.findViewById(R.id.locationName);
+        TextView textView = (TextView) convertView.findViewById(R.id.active_spinner_item);
 
         textView.setText(loc.getLocation());
 
@@ -34,6 +36,16 @@ public class LocationAdapter extends ArrayAdapter<Location> {
 
     @Override
     public View getDropDownView(int position, View convertView, ViewGroup parent) {
-        return getView(position, convertView, parent);
+        Location loc = getItem(position);
+        if (convertView == null) {
+            convertView = LayoutInflater.from(getContext())
+                    .inflate(R.layout.location_view, parent, false);
+        }
+
+        TextView textView = (TextView) convertView.findViewById(R.id.locationName);
+
+        textView.setText(loc.getLocation());
+
+        return convertView;
     }
 }

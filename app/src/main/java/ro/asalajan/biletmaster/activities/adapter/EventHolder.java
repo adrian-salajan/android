@@ -12,7 +12,8 @@ public class EventHolder {
     private View artist;
     private View venue;
 
-    private View calendarIcon;
+    private View dateDay;
+    private View dateMonth;
 
     public void setPosition(int position) {
         this.position = position;
@@ -30,8 +31,13 @@ public class EventHolder {
         this.venue = venue;
     }
 
-    public void setCalendarIcon(ImageView calendarIcon) {
-        this.calendarIcon = calendarIcon;
+
+    public void setDateDay(View dateDay) {
+        this.dateDay = dateDay;
+    }
+
+    public void setDateMonth(View dateMonth) {
+        this.dateMonth = dateMonth;
     }
 
     public void updateName(String text) {
@@ -49,6 +55,18 @@ public class EventHolder {
     public void updateVenue(String text) {
         if (venue != null) {
             ((TextView) venue).setText(text);
+        }
+    }
+
+    public void updateDateDay(String text) {
+        if (dateDay != null) {
+            ((TextView) dateDay).setText(text);
+        }
+    }
+
+    public void updateDateMonth(String text) {
+        if (dateMonth != null) {
+            ((TextView) dateMonth).setText(text);
         }
     }
 }

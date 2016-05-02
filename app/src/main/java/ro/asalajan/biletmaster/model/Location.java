@@ -13,6 +13,10 @@ public class Location {
         this.venues = venues;
     }
 
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
     public String getLocation() {
         return location;
     }

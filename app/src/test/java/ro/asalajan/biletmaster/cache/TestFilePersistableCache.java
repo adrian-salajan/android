@@ -1,4 +1,4 @@
-package ro.asalajan.biletmaster;
+package ro.asalajan.biletmaster.cache;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

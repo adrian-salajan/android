@@ -1,4 +1,17 @@
 <resources>
     <string name="app_name">biletmaster</string>
     <string name="action_settings">Settings</string>
+
+    <string-array name="distinct_location_names">
+        <item>Arad</item>
+        <item>Beliş</item>
+        <item>Cluj</item>
+        <item>Oradea</item>
+        <item>Odorheiu Secuiesc</item>
+        <item>Satu Mare</item>
+        <item>Sf. Gheorghe</item>
+        <item>Târgu Mureş</item>
+        <item>Timişoara</item>
+    </string-array>
+
 </resources>

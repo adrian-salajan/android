@@ -4,9 +4,31 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
 
-    <dimen name="event_name">20sp</dimen>
-    <dimen name="event_artist">18sp</dimen>
-    <dimen name="event_venue">16sp</dimen>
 
-    <dimen name="calendar_icon">80dp</dimen>
+
+
+    <!-- spinner -->
+    <dimen name="spinner_height">54dp</dimen>
+    <dimen name="spinner_icon">48dp</dimen>
+    <dimen name="active_spinner_text">24dp</dimen>
+
+    <!-- spinner elements -->
+    <dimen name="spinner_item_size">48dp</dimen>
+    <dimen name="spinner_text">20dp</dimen>
+    <dimen name="spinner_item_top_padding">9dp</dimen>
+
+
+    <!-- list item-->
+    <dimen name="list_item">72dp</dimen>
+    <dimen name="event_name">20sp</dimen>
+    <dimen name="event_artist">16sp</dimen>
+    <dimen name="event_venue">14sp</dimen>
+
+    <dimen name="event_date_day">24sp</dimen>
+    <dimen name="event_date_month">16sp</dimen>
+
+    <dimen name="calendar_icon">88dp</dimen>
+
+    <dimen name="left_padding">12dp</dimen>
+    <dimen name="top_padding">6dp</dimen>
 </resources>

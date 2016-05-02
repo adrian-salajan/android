@@ -9,6 +9,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.common.base.Optional;
+
+import org.joda.time.LocalDateTime;
+
 import java.util.List;
 
 import ro.asalajan.biletmaster.R;
@@ -51,6 +55,8 @@ public class EventAdapter extends ArrayAdapter<Event> {
             holder.updateName(event.getName());
             holder.updateArtist(event.getArtist());
             holder.updateVenue(event.getVenue().getName());
+            holder.updateDateDay(getDay(event.getDateTime()));
+            holder.updateDateMonth(getMonth(event.getDateTime()));
         }
         return convertView;
     }
@@ -70,12 +76,45 @@ public class EventAdapter extends ArrayAdapter<Event> {
         }
         holder.setName(init(R.id.eventName, event.getName(), view));
         holder.setVenue(init(R.id.eventVenue, event.getVenue().getName(), view));
-        holder.setCalendarIcon((ImageView) view.findViewById(R.id.calendarIcon));
+
+        System.out.println("<<<<<<<<< event" + event);
+        holder.setDateDay(init(R.id.date_day, getDay(event.getDateTime()), view));
+        holder.setDateMonth(init(R.id.date_month, getMonth(event.getDateTime()), view));
+        //holder.setCalendarIcon((View) view.findViewById(R.id.calendarIcon));
 
         view.setTag(holder);
 
         return view;
     }
+
+    private String getDay(Optional<LocalDateTime> dateTime) {
+        return dateTime.transform(dt -> String.valueOf(dt.getDayOfMonth())).or("?");
+    }
+
+    private String getMonth(Optional<LocalDateTime> dateTime) {
+        return dateTime.transform(dt -> dt.getMonthOfYear())
+                .transform(m -> monthToText(m))
+                .or("???");
+    }
+
+    private String monthToText(int m) {
+        switch (m) {
+            case 0: return "Ianuarie";
+            case 1: return "Februarie";
+            case 2: return "Martie";
+            case 3: return "Aprilie";
+            case 4: return "Mai";
+            case 5: return "Iunie";
+            case 6: return "Iulie";
+            case 7: return "August";
+            case 8: return "Septembrie";
+            case 9: return "Octombrie";
+            case 10: return "Noiembrie";
+            case 11: return "Decembrie";
+            default: return "???";
+        }
+    }
+
 
     private View init(int id, String text, View view) {
         TextView element = (TextView) view.findViewById(id);

@@ -306,11 +306,15 @@ public class TestBiletMasterService {
         List<Event> events = probe.getOnNextEvents().get(0);
 
         //first list
-        Assert.assertEquals("Unexpected title", "event1", events.get(0).getName());
-        Assert.assertEquals("Unexpected artist", "artist1", events.get(0).getArtist());
+        Event event1 = events.get(0);
+        Assert.assertEquals("Unexpected title", "event1", event1.getName());
+        Assert.assertEquals("Unexpected artist", "artist1", event1.getArtist());
         //second list
-        Assert.assertEquals("Unexpected title", "event2", events.get(1).getName());
-        Assert.assertEquals("Unexpected artist", "artist2", events.get(1).getArtist());
+        Event event2 = events.get(1);
+        Assert.assertEquals("Unexpected title", "event2", event2.getName());
+        Assert.assertEquals("Unexpected artist", "artist2", event2.getArtist());
+
+        Assert.assertTrue(event1.getDateTime().get().isBefore(event2.getDateTime().get()));
     }
 
     private InputStream readResource(String res) {

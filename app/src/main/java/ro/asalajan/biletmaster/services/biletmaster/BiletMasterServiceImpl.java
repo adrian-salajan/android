@@ -8,8 +8,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 
+import org.joda.time.LocalDateTime;
+
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import ro.asalajan.biletmaster.model.Event;
@@ -28,10 +32,29 @@ public class BiletMasterServiceImpl implements BiletMasterService {
 
     private final BiletMasterParser parser;
     private final HttpGateway httpGateway;
+    private Comparator<Event> eventDateComparator;
 
     public BiletMasterServiceImpl(BiletMasterParser parser, HttpGateway httpGateway) {
         this.parser = parser;
         this.httpGateway = httpGateway;
+        this.eventDateComparator = new Comparator<Event>() {
+            @Override
+            public int compare(Event lhs, Event rhs) {
+                LocalDateTime left = lhs.getDateTime().orNull();
+                LocalDateTime right = rhs.getDateTime().orNull();
+
+                if (left == null && right == null) {
+                    return 0;
+                }
+                if (left != null && right == null) {
+                    return -1;
+                }
+                if (left == null && right != null) {
+                    return 1;
+                }
+                return left.compareTo(right);
+            }
+        };
     }
 
     public Observable<List<Location>> getLocations() {
@@ -91,6 +114,7 @@ public class BiletMasterServiceImpl implements BiletMasterService {
                     List<Event> le = (List<Event>) o;
                     allEvents.addAll(le);
                 }
+                Collections.sort(allEvents, eventDateComparator);
                 return allEvents;
             }
         });

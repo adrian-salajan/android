@@ -2,6 +2,9 @@ package ro.asalajan.biletmaster.presenters;
 
 import android.util.Log;
 
+import java.util.List;
+
+import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterHelper;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterService;
@@ -14,12 +17,14 @@ public class EventsPresenter implements Presenter<EventsView>  {
 
 
     private BiletMasterService biletService;
+    private List<String> distinctLocationNames;
     private EventsView view;
     private Subscription locationsSub;
     private Subscription eventsSub;
 
-    public EventsPresenter(BiletMasterService biletService) {
+    public EventsPresenter(BiletMasterService biletService, List<String> distinctLocationNames) {
         this.biletService = biletService;
+        this.distinctLocationNames = distinctLocationNames;
     }
 
     @Override
@@ -27,10 +32,16 @@ public class EventsPresenter implements Presenter<EventsView>  {
 
         this.view = view;
 
-        locationsSub = biletService.getDistinctLocations(BiletMasterHelper.DISTINCT_LOCATIONS)
-                .doOnEach(notif -> System.out.println(notif.toString()))
+        locationsSub = biletService.getDistinctLocations(distinctLocationNames)
+                .map(locations -> {
+                    for (Location loc: locations) {
+                        if (loc.getLocation() == null || loc.getLocation().isEmpty()) {
+                            loc.setLocation("Alte zone");
+                        }
+                    }
+                    return locations;
+                })
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnEach(notif -> System.out.println(notif.toString()))
                 .subscribe(locations -> view.setLocations(locations),
                         t -> Log.d("activity locations", t.toString()));
 

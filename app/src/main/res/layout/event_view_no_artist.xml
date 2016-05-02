@@ -1,56 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@color/darkGrey"
+    android:paddingBottom="8dp"
+    android:paddingTop="8dp"
+    >
+    <!--android:gravity="center"-->
+    <!--android:minHeight="@dimen/calendar_icon"-->
+    <!--android:maxHeight="@dimen/calendar_icon"-->
 
-  <ImageView android:id="@+id/calendarIcon"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:src="#555"
-      android:maxWidth="@dimen/calendar_icon"
-      android:maxHeight="@dimen/calendar_icon"
-      android:minWidth="@dimen/calendar_icon"
-      android:minHeight="@dimen/calendar_icon"
-      android:background="@color/colorAccent"
-      />
+    <LinearLayout android:id="@+id/calendarIcon"
+        android:layout_width="@dimen/calendar_icon"
+        android:layout_height="@dimen/list_item"
+        android:orientation="vertical"
+        android:gravity="center"
+        >
+
+        <TextView android:id="@+id/date_day"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/darkGrey"
+            android:textColor="@color/textDark"
+            android:textAlignment="center"
+            android:text="5"
+            android:textSize="@dimen/event_date_day"
+            />
+
+        <TextView android:id="@+id/date_month"
+            android:layout_below="@id/date_day"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/darkGrey"
+            android:textColor="@color/textDark"
+            android:text="Iunie"
+            android:textSize="@dimen/event_date_month"
+            android:textAlignment="center"
+            />
+    </LinearLayout>
 
     <TextView  android:id = "@+id/eventName"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/calendarIcon"
         android:textSize="@dimen/event_name"
         android:textStyle="bold"
         android:text="Monsters of Rock"
+        android:textColor="@color/text"
+
         />
 
     <TextView android:id = "@+id/eventVenue"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_toRightOf="@id/calendarIcon"
         android:layout_below="@id/eventName"
         android:text="National Arena"
         android:textSize="@dimen/event_venue"
+        android:textColor="@color/textDark"
+
         />
 
 
 </RelativeLayout>
-<!--
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    <!--
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical" android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id = "@+id/eventName"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id = "@+id/eventName"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id = "@+id/eventArtist"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id = "@+id/eventArtist"/>
 
-</LinearLayout>
+    </LinearLayout>
 
-        -->
+            -->
 

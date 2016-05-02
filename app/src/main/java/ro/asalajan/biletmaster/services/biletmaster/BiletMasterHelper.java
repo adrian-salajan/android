@@ -8,11 +8,18 @@ import java.util.List;
 public class BiletMasterHelper {
 
 
-    public static List<String> DISTINCT_LOCATIONS = Collections.unmodifiableList(
-            Lists.newArrayList(
-                    "Cluj",
-                    "Oradea",
-                    "Sf. Gheorghe"
-            ));
+//    public static List<String> DISTINCT_LOCATIONS = Collections.unmodifiableList(
+//            Lists.newArrayList(
+//                    "Cluj",
+//                    "Oradea",
+//                    "Sf. Gheorghe"
+//            ));
 
+
+        public static List<String> DISTINCT_LOCATIONS = Collections.unmodifiableList(
+                Lists.newArrayList(
+                        "Cluj",
+                        "Oradea",
+                        "Sf. Gheorghe"
+                ));
 }

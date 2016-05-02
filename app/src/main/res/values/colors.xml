@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorPrimary">#252525</color>
+    <color name="colorPrimaryDark">#252525</color>
     <color name="colorAccent">#FF4081</color>
+
+
+    <color name="darkGrey">#252525</color>
+    <color name="text">#BBB</color>
+    <color name="textDark">#AAA</color>
+
+    <!-- list -->
+    <color name="list_bg">#454545</color>
+
+
+    <!--spinner -->
+    <color name="spinner_active">#FA7222</color>
+    <color name="spinner_bg">#222</color>
 </resources>

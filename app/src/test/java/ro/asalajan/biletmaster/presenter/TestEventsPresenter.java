@@ -103,7 +103,7 @@ public class TestEventsPresenter {
         when(service.getDistinctLocations(eq(BiletMasterHelper.DISTINCT_LOCATIONS)))
                 .thenReturn(Observable.just(expectedLocations()));
 
-        presenter = new EventsPresenter(service);
+        presenter = new EventsPresenter(service, BiletMasterHelper.DISTINCT_LOCATIONS);
         EventsView view = getEventsView();
         presenter.setView(view);
 
@@ -124,7 +124,7 @@ public class TestEventsPresenter {
         when(service.getEventsForLocation(eq(location2)))
                 .thenReturn(Observable.just(expectedEvents2()));
 
-        presenter = new EventsPresenter(service);
+        presenter = new EventsPresenter(service, BiletMasterHelper.DISTINCT_LOCATIONS);
         EventsView view = getEventsView();
 
         presenter.setView(view);

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/spinner_height"
+    android:orientation="horizontal"
+    android:background="@color/spinner_bg"
+    android:gravity="center_vertical"
+    android:elevation="4dp"
+    android:translationZ="4dp"
+    >
+
+    <TextView
+        android:id="@+id/active_spinner_item"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:textSize="@dimen/active_spinner_text"
+        android:textStyle="normal"
+        android:text="Bucuresti"
+        android:height="@dimen/spinner_height"
+        android:gravity="center_vertical"
+        android:textColor="@color/spinner_active"
+        android:layout_weight="80"
+        android:paddingLeft="@dimen/calendar_icon"
+
+
+        />
+
+    <ImageView
+        android:layout_width="@dimen/spinner_icon"
+        android:layout_height="@dimen/spinner_icon"
+        android:src="@drawable/down_arrow"
+        android:tint="@color/spinner_active"
+
+        android:layout_weight="10"
+        android:paddingRight="16dp"
+        />
+</LinearLayout>

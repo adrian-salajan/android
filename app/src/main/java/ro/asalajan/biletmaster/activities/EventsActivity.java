@@ -11,6 +11,7 @@ import android.widget.Spinner;
 import net.danlew.android.joda.JodaTimeAndroid;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import ro.asalajan.biletmaster.R;
@@ -40,6 +41,7 @@ public class EventsActivity extends Activity implements EventsView {
     private EventAdapter eventAdapter;
     private FilePersistableCache<?> cache;
     private String name;
+    private List<String> distinctLocationNames;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +62,8 @@ public class EventsActivity extends Activity implements EventsView {
         if (presenter == null) {  //TODO save state of the presenter!
             name = "EventsActivity";
             cache.load();
-            presenter = new EventsPresenter(biletService);
+            distinctLocationNames = Arrays.asList(getResources().getStringArray(R.array.distinct_location_names));
+            presenter = new EventsPresenter(biletService, distinctLocationNames);
             presenter.setView(this);
             Log.d(name, "onCreate: loaded cache, created new presenter");
             Log.e(name, "onCreate:");

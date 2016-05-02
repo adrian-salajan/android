@@ -81,6 +81,7 @@ public class Event {
                 ", artist='" + artist + '\'' +
                 ", room='" + room + '\'' +
                 ", venue=" + venue +
+                ", dateTime=" + dateTime +
                 '}';
     }
 }
