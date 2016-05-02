@@ -1,17 +1,17 @@
-package ro.asalajan.biletmaster.services.cache;
+package ro.asalajan.biletmaster.cache;
 
 import com.google.common.collect.ImmutableMap;
 
 /**
  * Cache that will be persisted after calling save().
- * Calling load() will overwrite the inner cache.
+ * Calling load() will load data into the the inner cache.
  */
-public abstract class PersistableDataCache implements DataCache {
+public abstract class PersistableCache implements DataCache {
 
     protected DataCache innerCache;
 
-    public PersistableDataCache() {
-        innerCache = new InMemoryDataCache();
+    public PersistableCache(DataCache innerCache) {
+        this.innerCache = innerCache;
     }
 
     public abstract void save();

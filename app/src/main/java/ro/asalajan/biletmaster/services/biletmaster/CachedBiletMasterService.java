@@ -7,7 +7,7 @@ import java.util.List;
 import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.model.Venue;
-import ro.asalajan.biletmaster.services.cache.DataCache;
+import ro.asalajan.biletmaster.cache.DataCache;
 import rx.Observable;
 
 public class CachedBiletMasterService implements BiletMasterService  {

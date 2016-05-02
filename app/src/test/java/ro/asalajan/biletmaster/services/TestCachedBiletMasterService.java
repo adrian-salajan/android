@@ -21,7 +21,7 @@ import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.model.Venue;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterService;
 import ro.asalajan.biletmaster.services.biletmaster.CachedBiletMasterService;
-import ro.asalajan.biletmaster.services.cache.DataCache;
+import ro.asalajan.biletmaster.cache.DataCache;
 import rx.Observable;
 import rx.observers.TestSubscriber;
 

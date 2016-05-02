@@ -16,7 +16,7 @@ import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.model.Venue;
 import ro.asalajan.biletmaster.parser.BiletMasterParser;
-import ro.asalajan.biletmaster.services.http.HttpGateway;
+import ro.asalajan.biletmaster.gateways.HttpGateway;
 import rx.Observable;
 import rx.functions.Func1;
 import rx.functions.FuncN;

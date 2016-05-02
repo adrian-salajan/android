@@ -2,18 +2,21 @@ package ro.asalajan.biletmaster.presenter;
 
 import android.support.annotation.NonNull;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.model.Venue;
 import ro.asalajan.biletmaster.presenters.EventsPresenter;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterHelper;
+import ro.asalajan.biletmaster.services.biletmaster.BiletMasterService;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterServiceImpl;
 import ro.asalajan.biletmaster.view.EventsView;
 import rx.Observable;
@@ -23,6 +26,7 @@ import rx.android.plugins.RxAndroidSchedulersHook;
 import rx.plugins.RxJavaPlugins;
 import rx.plugins.RxJavaSchedulersHook;
 import rx.schedulers.Schedulers;
+import rx.schedulers.TestScheduler;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Matchers.eq;
@@ -33,26 +37,30 @@ public class TestEventsPresenter {
 
     private EventsPresenter presenter;
 
-
-    private BiletMasterServiceImpl service;
+    private BiletMasterService service;
     private Location location;
     private Location location2;
+
+    private static TestScheduler mainThread = new TestScheduler();
+    private static TestScheduler ioThread = new TestScheduler();
+    private static TestScheduler computationThread = new TestScheduler();
+    private static TestScheduler newThread = new TestScheduler();
 
     static {
         RxJavaPlugins.getInstance().registerSchedulersHook(new RxJavaSchedulersHook() {
             @Override
             public Scheduler getIOScheduler() {
-                return Schedulers.immediate();
+                return ioThread;
             }
 
             @Override
             public Scheduler getComputationScheduler() {
-                return Schedulers.immediate();
+                return computationThread;
             }
 
             @Override
             public Scheduler getNewThreadScheduler() {
-                return Schedulers.immediate();
+                return newThread;
             }
 
         });
@@ -60,8 +68,9 @@ public class TestEventsPresenter {
         RxAndroidPlugins.getInstance().registerSchedulersHook(new RxAndroidSchedulersHook() {
             @Override
             public Scheduler getMainThreadScheduler() {
-                return Schedulers.immediate();
+                return mainThread;
             }
+
 
         });
     }
@@ -69,7 +78,7 @@ public class TestEventsPresenter {
     private List<List<Location>> viewLocations;
     private List<List<Event>> viewEvents;
 
-    //    @After
+//        @After
 //    public void tearDown() {
 //        RxAndroidPlugins.getInstance().reset();
 //    }
@@ -77,7 +86,7 @@ public class TestEventsPresenter {
 
     @Before
     public void setup() {
-        service = mock(BiletMasterServiceImpl.class);
+        service = mock(BiletMasterService.class);
         location = new Location("location1", newArrayList(
                 new Venue("venue1", "venue1Url"))
         );
@@ -96,8 +105,9 @@ public class TestEventsPresenter {
 
         presenter = new EventsPresenter(service);
         EventsView view = getEventsView();
-
         presenter.setView(view);
+
+        mainThread.advanceTimeBy(1, TimeUnit.SECONDS);
 
         Assert.assertEquals(expectedLocations(), viewLocations.get(0));
 
@@ -118,6 +128,8 @@ public class TestEventsPresenter {
         EventsView view = getEventsView();
 
         presenter.setView(view);
+
+        mainThread.advanceTimeBy(1, TimeUnit.SECONDS);
 
         Assert.assertEquals(expectedEvents(), viewEvents.get(0));
         Assert.assertEquals(expectedEvents2(), viewEvents.get(1));

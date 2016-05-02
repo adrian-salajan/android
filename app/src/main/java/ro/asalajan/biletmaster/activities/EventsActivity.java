@@ -16,6 +16,7 @@ import java.util.List;
 import ro.asalajan.biletmaster.R;
 import ro.asalajan.biletmaster.activities.adapter.EventAdapter;
 import ro.asalajan.biletmaster.activities.adapter.LocationAdapter;
+import ro.asalajan.biletmaster.cache.EventListCache;
 import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
@@ -23,8 +24,8 @@ import ro.asalajan.biletmaster.presenters.EventsPresenter;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterService;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterServiceImpl;
 import ro.asalajan.biletmaster.services.biletmaster.CachedBiletMasterService;
-import ro.asalajan.biletmaster.services.cache.InMemoryDataCache;
-import ro.asalajan.biletmaster.services.http.HttpGateway;
+import ro.asalajan.biletmaster.cache.FilePersistableCache;
+import ro.asalajan.biletmaster.gateways.HttpGateway;
 import ro.asalajan.biletmaster.view.EventsView;
 import rx.Observable;
 
@@ -52,8 +53,6 @@ public class EventsActivity extends Activity implements EventsView {
                             new BiletMasterServiceImpl(new BiletMasterParserImpl(), new HttpGateway()),
                             cache
         );
-        // new AndroidFileCache(getExternalCacheDir()));
-
 
         createLocationSpinner();
         createEventsFromSpinnerSelection();

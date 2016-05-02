@@ -20,7 +20,7 @@ import ro.asalajan.biletmaster.model.Venue;
 import ro.asalajan.biletmaster.parser.BiletMasterParser;
 import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterServiceImpl;
-import ro.asalajan.biletmaster.services.http.HttpGateway;
+import ro.asalajan.biletmaster.gateways.HttpGateway;
 import rx.Observable;
 import rx.observers.TestSubscriber;
 
@@ -118,7 +118,7 @@ public class TestBiletMasterService {
 //        TestSubscriber<List<Location>> probe = new TestSubscriber<>();
 //        locations.subscribe(probe);
 //
-//        subject.onError(new RuntimeException("test exception"));
+//        subject.onError(new RuntimeException("saveAndLoadFromFile exception"));
 //        subject.onNext(webpage);
 //
 //        probe.assertNoErrors();
@@ -279,7 +279,7 @@ public class TestBiletMasterService {
         Assert.assertEquals("20.04.2016 10:30", fmt.print(events.get(2).getDateTime().get()));
     }
 
-    //TODO: handle & test for missing Event.artist & Event.room & Event.date
+    //TODO: handle & saveAndLoadFromFile for missing Event.artist & Event.room & Event.date
 
     //TODO: try hamcrest for UT
 

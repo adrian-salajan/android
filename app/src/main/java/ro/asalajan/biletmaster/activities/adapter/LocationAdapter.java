@@ -17,10 +17,6 @@ public class LocationAdapter extends ArrayAdapter<Location> {
         super(context, 0, locations);
     }
 
-//    public LocationAdapter(Context context, int resourceId, List<Location> locations) {
-//        super(context, resourceId, locations);
-//    }
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         Location loc = getItem(position);

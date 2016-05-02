@@ -1,4 +1,4 @@
-package ro.asalajan.biletmaster.services.cache;
+package ro.asalajan.biletmaster.cache;
 
 import com.google.common.collect.ImmutableMap;
 

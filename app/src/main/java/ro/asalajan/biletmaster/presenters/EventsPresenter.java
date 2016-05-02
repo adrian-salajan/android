@@ -28,7 +28,9 @@ public class EventsPresenter implements Presenter<EventsView>  {
         this.view = view;
 
         locationsSub = biletService.getDistinctLocations(BiletMasterHelper.DISTINCT_LOCATIONS)
+                .doOnEach(notif -> System.out.println(notif.toString()))
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnEach(notif -> System.out.println(notif.toString()))
                 .subscribe(locations -> view.setLocations(locations),
                         t -> Log.d("activity locations", t.toString()));
 

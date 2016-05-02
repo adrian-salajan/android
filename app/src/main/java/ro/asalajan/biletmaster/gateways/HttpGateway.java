@@ -1,4 +1,4 @@
-package ro.asalajan.biletmaster.services.http;
+package ro.asalajan.biletmaster.gateways;
 
 import java.io.IOException;
 import java.io.InputStream;
