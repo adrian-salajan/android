@@ -1,6 +1,7 @@
 package ro.asalajan.biletmaster.presenter;
 
 import android.support.annotation.NonNull;
+import android.view.DragEvent;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -176,6 +177,21 @@ public class TestEventsPresenter {
             @Override
             public Observable<Location> getSelectedLocation() {
                 return Observable.just(location, location2);
+            }
+
+            @Override
+            public Observable<Boolean> isOnline() {
+                return null;
+            }
+
+            @Override
+            public void showOffline() {
+
+            }
+
+            @Override
+            public Observable<DragEvent> listDraggs() {
+                return null;
             }
 
             @Override

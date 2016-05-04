@@ -12,6 +12,7 @@ import org.mockito.Mockito;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,22 +27,27 @@ import rx.Observable;
 import rx.observers.TestSubscriber;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static junit.framework.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class TestCachedBiletMasterService {
 
 
-    BiletMasterService cachedService;
-    boolean gotFromCache = false;
-
-    private Location loc;
-    private ArrayList<Event> expected;
     private BiletMasterService innerService;
+    private BiletMasterService cachedService;
+    private DataCache cache;
+
+    private Location location;
+    private Venue venue1;
+    private Venue venue2;
+
 
     @Before
     public void setup() throws UnsupportedEncodingException {
-        DataCache cache = new DataCache() {
+        cache = Mockito.spy(new DataCache() {
 
             Map<Integer, Object> cache = new HashMap<>();
 
@@ -52,7 +58,6 @@ public class TestCachedBiletMasterService {
 
             @Override
             public Object get(int id) {
-                gotFromCache = true;
                 return cache.get(id);
             }
 
@@ -65,26 +70,30 @@ public class TestCachedBiletMasterService {
             public void clear() {
 
             }
-        };
-        Venue venue1 = new Venue("v1", "url1");
-        Venue venue2 = new Venue("v2", "url2");
-        loc = new Location("test", newArrayList(venue1, venue2));
+        });
+        venue1 = new Venue("v1", "url1");
+        venue2 = new Venue("v2", "url2");
+        location = new Location("test", newArrayList(venue1, venue2));
+
+
         innerService = mock(BiletMasterService.class);
-        expected = Lists.newArrayList(
-                new Event("event1", "artist1", "room1", Optional.absent(), false, null, venue1),
-                new Event("event2", "artist2", "room2", Optional.absent(), false, null, venue2)
-        );
-        when(innerService.getEventsForLocation(Mockito.eq(loc)))
-                .thenReturn(Observable.just(expected));
-        cachedService = new CachedBiletMasterService(innerService, cache);
+        cachedService = new CachedBiletMasterService(innerService, cache, cache);
     }
 
     @Test
     public void givenLocationQueryEventsWhereCached() {
+        ArrayList<Event> expectedEvents = Lists.newArrayList(
+                new Event("event1", "artist1", "room1", Optional.absent(), false, null, venue1),
+                new Event("event2", "artist2", "room2", Optional.absent(), false, null, venue2)
+        );
+
+        when(innerService.getEventsForLocation(Mockito.eq(location)))
+                .thenReturn(Observable.just(expectedEvents));
+
         TestSubscriber<List<Event>> probe = new TestSubscriber<>();
 
         Observable
-                .just(loc, loc)
+                .just(location, location)
                 .flatMap(location -> cachedService.getEventsForLocation(location))
                 .subscribe(probe);
 
@@ -92,13 +101,38 @@ public class TestCachedBiletMasterService {
         probe.assertNoErrors();
 
 
-        Assert.assertEquals(this.expected, probe.getOnNextEvents().get(0));
-        Assert.assertEquals(this.expected, probe.getOnNextEvents().get(1));
+        assertEquals(expectedEvents, probe.getOnNextEvents().get(0));
+        assertEquals(expectedEvents, probe.getOnNextEvents().get(1));
 
-        Mockito.verify(innerService).getEventsForLocation(loc);
-        Mockito.verifyNoMoreInteractions(innerService);
+        verify(innerService).getEventsForLocation(location);
+        verifyNoMoreInteractions(innerService);
+    }
 
-        Assert.assertTrue(gotFromCache);
+    @Test
+    public void distinctLocationsAreCached() {
+        List<Location> expectedLocations = Lists.newArrayList(location);
+
+        when(innerService.getDistinctLocations(Mockito.eq(Collections.emptyList())))
+                .thenReturn(Observable.just(expectedLocations));
+
+
+
+        TestSubscriber<List<Location>> probe1 = new TestSubscriber<>();
+        cachedService.getDistinctLocations(Collections.emptyList())
+            .subscribe(probe1);
+
+        TestSubscriber<List<Location>> probe2 = new TestSubscriber<>();
+        cachedService.getDistinctLocations(Collections.emptyList())
+                .subscribe(probe2);
+
+        probe1.assertNoErrors();
+        probe2.assertNoErrors();
+
+        assertEquals(expectedLocations, probe1.getOnNextEvents().get(0));
+        assertEquals(expectedLocations, probe2.getOnNextEvents().get(0));
+
+        verify(innerService).getDistinctLocations(Collections.emptyList());
+        verifyNoMoreInteractions(innerService);
 
     }
 

@@ -49,6 +49,11 @@ public class TestFilePersistableCache {
         }
 
         @Override
+        protected String modelName() {
+            return "test";
+        }
+
+        @Override
         protected Gson getGson() {
             return new Gson();
         }

@@ -1,12 +1,17 @@
 package ro.asalajan.biletmaster.activities;
 
 import android.app.Activity;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -18,6 +23,7 @@ import ro.asalajan.biletmaster.R;
 import ro.asalajan.biletmaster.activities.adapter.EventAdapter;
 import ro.asalajan.biletmaster.activities.adapter.LocationAdapter;
 import ro.asalajan.biletmaster.cache.EventListCache;
+import ro.asalajan.biletmaster.cache.LocationCache;
 import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
@@ -39,9 +45,11 @@ public class EventsActivity extends Activity implements EventsView {
     private Spinner spinner;
     private LocationAdapter locationAdapter;
     private EventAdapter eventAdapter;
-    private FilePersistableCache<?> cache;
+    FilePersistableCache<List<Event>> eventCache;
+    FilePersistableCache<List<Location>> locationCache;
     private String name;
     private List<String> distinctLocationNames;
+    private ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,11 +57,12 @@ public class EventsActivity extends Activity implements EventsView {
         JodaTimeAndroid.init(this);
         setContentView(R.layout.activity_events);
 
-        cache = new EventListCache(getExternalCacheDir());
+        eventCache = new EventListCache(getExternalCacheDir());
+        locationCache = new LocationCache(getExternalCacheDir());
 
         biletService = new CachedBiletMasterService(
                             new BiletMasterServiceImpl(new BiletMasterParserImpl(), new HttpGateway()),
-                            cache
+                            eventCache, locationCache
         );
 
         createLocationSpinner();
@@ -61,13 +70,34 @@ public class EventsActivity extends Activity implements EventsView {
 
         if (presenter == null) {  //TODO save state of the presenter!
             name = "EventsActivity";
-            cache.load();
+            loadCaches();
             distinctLocationNames = Arrays.asList(getResources().getStringArray(R.array.distinct_location_names));
             presenter = new EventsPresenter(biletService, distinctLocationNames);
+
+
             presenter.setView(this);
             Log.d(name, "onCreate: loaded cache, created new presenter");
-            Log.e(name, "onCreate:");
         }
+    }
+
+    private void loadCaches() {
+        eventCache.load();
+        locationCache.load();
+    }
+
+    @Override
+    public void showOffline() {
+        Log.e(name, "show offline toast");
+        Toast.makeText(getApplicationContext(), "No internet connection available.", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public Observable<Boolean> isOnline() {
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        Log.d(name, "is online: " + (networkInfo != null && networkInfo.isConnected()));
+        return Observable.just(networkInfo != null && networkInfo.isConnected());
     }
 
     @Override
@@ -98,7 +128,7 @@ public class EventsActivity extends Activity implements EventsView {
 
 
     private void createEventsFromSpinnerSelection() {
-        ListView listView =(ListView) findViewById(R.id.eventsListView);
+        listView = (ListView) findViewById(R.id.eventsListView);
         eventAdapter = new EventAdapter(this, new ArrayList<>());
         listView.setAdapter(eventAdapter);
     }
@@ -116,6 +146,19 @@ public class EventsActivity extends Activity implements EventsView {
                 @Override
                 public void onNothingSelected(AdapterView<?> parent) {
 
+                }
+            });
+        });
+    }
+
+    @Override
+    public Observable<DragEvent> listDraggs() {
+        return Observable.create(subscriber -> {
+            listView.setOnDragListener(new View.OnDragListener() {
+                @Override
+                public boolean onDrag(View v, DragEvent event) {
+                    subscriber.onNext(event);
+                    return true;
                 }
             });
         });
@@ -163,8 +206,13 @@ public class EventsActivity extends Activity implements EventsView {
     protected void onPause() {
         super.onPause();
         Log.e(name, "on pause");
-        cache.save();
+        saveCaches();
         Log.d(name, "onStop: saved cache");
+    }
+
+    private void saveCaches() {
+        eventCache.save();
+        locationCache.save();
     }
 
     @Override

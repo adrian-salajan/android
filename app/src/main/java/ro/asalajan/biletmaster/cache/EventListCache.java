@@ -29,6 +29,11 @@ public class EventListCache extends FilePersistableCache<List<Event>> {
     }
 
     @Override
+    protected String modelName() {
+        return "events";
+    }
+
+    @Override
     protected Gson getGson() {
         return new GsonBuilder()
                 .serializeNulls()

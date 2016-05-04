@@ -10,9 +10,9 @@ public abstract class PersistableCache implements DataCache {
 
     protected DataCache innerCache;
 
-    public PersistableCache(DataCache innerCache) {
-        this.innerCache = innerCache;
-    }
+//    protected PersistableCache(DataCache innerCache) {
+//        this.innerCache = innerCache;
+//    }
 
     public abstract void save();
     public abstract void load();

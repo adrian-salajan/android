@@ -14,12 +14,16 @@ public class CachedBiletMasterService implements BiletMasterService  {
 
     private BiletMasterService service;
 
-    private DataCache cache;
+    private DataCache eventsCache;
+    private DataCache locationsCache;
+
+    public static int CACHED_LOCATIONS_ID = "CACHED_LOCATIONS_ID".hashCode();
 
 
-    public CachedBiletMasterService(BiletMasterService service, DataCache cache) {
+    public CachedBiletMasterService(BiletMasterService service, DataCache eventsCache, DataCache locationsCache) {
         this.service = service;
-        this.cache = cache;
+        this.eventsCache = eventsCache;
+        this.locationsCache = locationsCache;
     }
 
     @Override
@@ -29,19 +33,27 @@ public class CachedBiletMasterService implements BiletMasterService  {
 
     @Override
     public Observable<List<Location>> getDistinctLocations(List<String> distinctLocations) {
-        return service.getDistinctLocations(distinctLocations);
+        return Observable.defer(() -> {
+            List<Location> cachedLocations = (List<Location>) locationsCache.get(CACHED_LOCATIONS_ID);
+            if (cachedLocations != null) {
+                return Observable.just(cachedLocations);
+            }
+            return service.getDistinctLocations(distinctLocations)
+                    .doOnNext(locations -> locationsCache.put(CACHED_LOCATIONS_ID, locations) );
+        });
+
     }
 
     @Override
     public Observable<List<Event>> getEventsForLocation(Location location) {
         return Observable.defer(() -> {
-            List<Event> cachedEvents = (List<Event>) cache.get(location.hashCode());
+            List<Event> cachedEvents = (List<Event>) eventsCache.get(location.hashCode());
             if (cachedEvents != null) {
                 Log.d("CachedService", ">>>> got from cache: " + location.getLocation());
                 return Observable.just(cachedEvents);
             }
             return service.getEventsForLocation(location)
-                    .doOnNext(events -> cache.put(location.hashCode(), events));
+                    .doOnNext(events -> eventsCache.put(location.hashCode(), events));
         });
     }
 

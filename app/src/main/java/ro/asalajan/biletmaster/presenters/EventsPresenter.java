@@ -21,6 +21,9 @@ public class EventsPresenter implements Presenter<EventsView>  {
     private EventsView view;
     private Subscription locationsSub;
     private Subscription eventsSub;
+    private Subscription dragsWhileOfflineSub;
+
+    private static String name = "EventPresenter";
 
     public EventsPresenter(BiletMasterService biletService, List<String> distinctLocationNames) {
         this.biletService = biletService;
@@ -32,9 +35,25 @@ public class EventsPresenter implements Presenter<EventsView>  {
 
         this.view = view;
 
+        initView(this.view);
+
+//        dragsWhileOfflineSub = view.listDraggs()
+//                .takeUntil(view.isOnline().filter(isOnline -> Boolean.TRUE.equals(isOnline)))
+//                .doOnCompleted(() -> initView(this.view))
+//                .subscribe(
+//                        dragEvent1 -> this.view.showOffline(),
+//                        t -> t.printStackTrace());
+
+
+    }
+
+    private void initView(EventsView view) {
+
+        Log.e(name, ">>>>>>>init view");
+
         locationsSub = biletService.getDistinctLocations(distinctLocationNames)
                 .map(locations -> {
-                    for (Location loc: locations) {
+                    for (Location loc : locations) {
                         if (loc.getLocation() == null || loc.getLocation().isEmpty()) {
                             loc.setLocation("Alte zone");
                         }
@@ -46,7 +65,6 @@ public class EventsPresenter implements Presenter<EventsView>  {
                         t -> Log.d("activity locations", t.toString()));
 
         onSelect(view.getSelectedLocation());
-
     }
 
     private void onSelect(Observable<Location> selected) {
@@ -57,10 +75,13 @@ public class EventsPresenter implements Presenter<EventsView>  {
                         t -> {Log.d("!!!!!!!!!!!!!!!!!!!!!!!!", t.toString()); t.printStackTrace();});
     }
 
+
+
     @Override
     public void removeView() {
         eventsSub.unsubscribe();
         locationsSub.unsubscribe();
+        //dragsWhileOfflineSub.unsubscribe();
         view = null;
     }
 }

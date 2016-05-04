@@ -31,20 +31,24 @@ public abstract class FilePersistableCache<T> extends PersistableCache {
     private final Type serializedLineType;
 
     public FilePersistableCache(DataCache innerCache, File externalCacheDir) {
-        super(innerCache);
-        cacheFile = new File(externalCacheDir, "cacheFile");
+        this.innerCache = innerCache;
+        serializedLineType = getType();
+
+        cacheFile = new File(externalCacheDir, "cacheFileFor" + modelName());
         try {
             initNewCache();
         } catch (IOException e) {
             Log.e(name, e.toString());
             e.printStackTrace();
         }
-        serializedLineType = getType();
         timestampById = new HashMap<>();
         Log.e(name, "FilePersistableCache created");
 
         gson = getGson();
     }
+
+    protected abstract String modelName();
+
 
     protected abstract Gson getGson();
     protected abstract Type getType();
