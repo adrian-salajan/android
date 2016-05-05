@@ -2,11 +2,11 @@ package ro.asalajan.biletmaster.view;
 
 public interface View {
 
-    void onCreate();
+    void onViewCreate();
 
     void onBackground();
 
     void onForeground();
 
-    void onDestroy();
+    void onViewDestroy();
 }

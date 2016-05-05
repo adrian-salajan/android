@@ -8,13 +8,16 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.model.Venue;
+import ro.asalajan.biletmaster.presenters.Environment;
 import ro.asalajan.biletmaster.presenters.EventsPresenter;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterHelper;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterService;
@@ -24,12 +27,14 @@ import rx.Observable;
 import rx.Scheduler;
 import rx.android.plugins.RxAndroidPlugins;
 import rx.android.plugins.RxAndroidSchedulersHook;
+import rx.functions.Action0;
 import rx.plugins.RxJavaPlugins;
 import rx.plugins.RxJavaSchedulersHook;
 import rx.schedulers.Schedulers;
 import rx.schedulers.TestScheduler;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -64,6 +69,7 @@ public class TestEventsPresenter {
                 return newThread;
             }
 
+
         });
 
         RxAndroidPlugins.getInstance().registerSchedulersHook(new RxAndroidSchedulersHook() {
@@ -78,6 +84,10 @@ public class TestEventsPresenter {
 
     private List<List<Location>> viewLocations;
     private List<List<Event>> viewEvents;
+
+    Environment env;
+    private boolean showedOffline, showedError;
+    private Location selectedLocation;
 
 //        @After
 //    public void tearDown() {
@@ -97,6 +107,10 @@ public class TestEventsPresenter {
 
         viewLocations = new ArrayList<>();
         viewEvents = new ArrayList<>();
+
+        env = mock(Environment.class);
+        showedOffline = false;
+        showedError = false;
     }
 
     @Test
@@ -104,14 +118,21 @@ public class TestEventsPresenter {
         when(service.getDistinctLocations(eq(BiletMasterHelper.DISTINCT_LOCATIONS)))
                 .thenReturn(Observable.just(expectedLocations()));
 
-        presenter = new EventsPresenter(service, BiletMasterHelper.DISTINCT_LOCATIONS);
+
+        presenter = new EventsPresenter(env, service, BiletMasterHelper.DISTINCT_LOCATIONS);
         EventsView view = getEventsView();
         presenter.setView(view);
 
         mainThread.advanceTimeBy(1, TimeUnit.SECONDS);
 
         Assert.assertEquals(expectedLocations(), viewLocations.get(0));
+        noMsgShowed();
 
+    }
+
+    private void noMsgShowed() {
+        Assert.assertFalse("Error showed", showedError);
+        Assert.assertFalse("Offline showed", showedOffline);
     }
 
     @Test
@@ -125,15 +146,71 @@ public class TestEventsPresenter {
         when(service.getEventsForLocation(eq(location2)))
                 .thenReturn(Observable.just(expectedEvents2()));
 
-        presenter = new EventsPresenter(service, BiletMasterHelper.DISTINCT_LOCATIONS);
+        presenter = new EventsPresenter(env, service, BiletMasterHelper.DISTINCT_LOCATIONS);
+        EventsView view = getEventsView();
+
+        presenter.setView(view);
+
+        mainThread.advanceTimeBy(1, TimeUnit.SECONDS);
+//        mainThread.advanceTimeBy(1, TimeUnit.SECONDS);
+//        mainThread.advanceTimeBy(1, TimeUnit.SECONDS);
+
+        Assert.assertEquals(expectedEvents(), viewEvents.get(0));
+        Assert.assertEquals(expectedEvents2(), viewEvents.get(1));
+
+        noMsgShowed();
+    }
+
+    @Test
+    public void givenNoInternetWhenGetEventsShowOffline() {
+
+        when(service.getDistinctLocations(eq(BiletMasterHelper.DISTINCT_LOCATIONS))).thenReturn(Observable.just(newArrayList(location, location2)));
+
+        when(service.getEventsForLocation(eq(location))).thenReturn(Observable.error(new IOException("offline")));
+
+        when(env.isOnline()).thenReturn(Observable.just(Boolean.FALSE));
+
+        presenter = new EventsPresenter(env, service, BiletMasterHelper.DISTINCT_LOCATIONS);
         EventsView view = getEventsView();
 
         presenter.setView(view);
 
         mainThread.advanceTimeBy(1, TimeUnit.SECONDS);
 
-        Assert.assertEquals(expectedEvents(), viewEvents.get(0));
-        Assert.assertEquals(expectedEvents2(), viewEvents.get(1));
+        Assert.assertEquals(Collections.emptyList(), viewEvents.get(0));
+
+        Assert.assertTrue("Offline msg not showed", showedOffline);
+    }
+
+    @Test
+    public void givenParseErrorWhenGetEventsShowError() {
+
+        when(service.getDistinctLocations(eq(BiletMasterHelper.DISTINCT_LOCATIONS))).thenReturn(Observable.just(newArrayList(location, location2)));
+
+        when(service.getEventsForLocation(eq(location))).thenReturn(Observable.error(new IOException("offline")));
+
+        when(env.isOnline()).thenReturn(Observable.just(Boolean.TRUE));
+
+        presenter = new EventsPresenter(env, service, BiletMasterHelper.DISTINCT_LOCATIONS);
+        EventsView view = getEventsView();
+
+        presenter.setView(view);
+
+        mainThread.advanceTimeBy(1, TimeUnit.SECONDS);
+
+        Assert.assertEquals(Collections.emptyList(), viewEvents.get(0));
+
+        Assert.assertTrue("Error msg not showed", showedError);
+    }
+
+    //TODO on online-offline state change, refresh view
+    @Test
+    public void givenOfflineWhenOnlineRefreshView() {
+    }
+
+    @Test
+    public void givenOnlineWhenOnlineRefreshView() {
+
     }
 
     private List<Event> expectedEvents() {
@@ -161,13 +238,10 @@ public class TestEventsPresenter {
     @NonNull
     private EventsView getEventsView() {
         return new EventsView() {
-
-
             @Override
             public void setLocations(List<Location> locations) {
                 TestEventsPresenter.this.viewLocations.add(locations);
             }
-
 
             @Override
             public void setEvents(List<Event> events) {
@@ -180,22 +254,17 @@ public class TestEventsPresenter {
             }
 
             @Override
-            public Observable<Boolean> isOnline() {
-                return null;
-            }
-
-            @Override
             public void showOffline() {
-
+                showedOffline = true;
             }
 
             @Override
-            public Observable<DragEvent> listDraggs() {
-                return null;
+            public void showError() {
+                showedError = true;
             }
 
             @Override
-            public void onCreate() {
+            public void onViewCreate() {
 
             }
 
@@ -210,7 +279,7 @@ public class TestEventsPresenter {
             }
 
             @Override
-            public void onDestroy() {
+            public void onViewDestroy() {
 
             }
         };

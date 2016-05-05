@@ -1,12 +1,8 @@
 package ro.asalajan.biletmaster.activities;
 
 import android.app.Activity;
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.DragEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -27,6 +23,7 @@ import ro.asalajan.biletmaster.cache.LocationCache;
 import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
 import ro.asalajan.biletmaster.parser.BiletMasterParserImpl;
+import ro.asalajan.biletmaster.presenters.Environment;
 import ro.asalajan.biletmaster.presenters.EventsPresenter;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterService;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterServiceImpl;
@@ -40,40 +37,87 @@ public class EventsActivity extends Activity implements EventsView {
 
     private BiletMasterService biletService;
 
-    EventsPresenter presenter;
+    private EventsPresenter presenter;
 
     private Spinner spinner;
     private LocationAdapter locationAdapter;
     private EventAdapter eventAdapter;
     FilePersistableCache<List<Event>> eventCache;
     FilePersistableCache<List<Location>> locationCache;
-    private String name;
+    private static String name = "EventsActivity";
     private List<String> distinctLocationNames;
     private ListView listView;
+
+    Environment env;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        onViewCreate();
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        Log.e(name, "focus changed: " + hasFocus);
+        if (hasFocus) {
+            onForeground();
+        } else {
+            onBackground();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        onViewDestroy();
+    }
+
+    @Override
+    public void onViewDestroy() {
+        Log.e(name, "on destroy");
+        presenter.removeView();
+        Log.d(name, "onDestroy: removed view");
+    }
+
+    @Override
+    public void onViewCreate() {
         JodaTimeAndroid.init(this);
+        env = new AndroidEnvironment(getApplicationContext());
+
         setContentView(R.layout.activity_events);
 
         eventCache = new EventListCache(getExternalCacheDir());
         locationCache = new LocationCache(getExternalCacheDir());
 
         biletService = new CachedBiletMasterService(
-                            new BiletMasterServiceImpl(new BiletMasterParserImpl(), new HttpGateway()),
-                            eventCache, locationCache
+                new BiletMasterServiceImpl(new BiletMasterParserImpl(), new HttpGateway()),
+                eventCache, locationCache
         );
 
         createLocationSpinner();
         createEventsFromSpinnerSelection();
 
+        initPresenter();
+    }
+
+    private void createLocationSpinner() {
+        spinner = (Spinner) findViewById(R.id.locationSpinner);
+        locationAdapter = new LocationAdapter(this, new ArrayList<>());
+        spinner.setAdapter(locationAdapter);
+    }
+
+    private void createEventsFromSpinnerSelection() {
+        listView = (ListView) findViewById(R.id.eventsListView);
+        eventAdapter = new EventAdapter(this, new ArrayList<>());
+        listView.setAdapter(eventAdapter);
+    }
+
+    private void initPresenter() {
         if (presenter == null) {  //TODO save state of the presenter!
-            name = "EventsActivity";
             loadCaches();
             distinctLocationNames = Arrays.asList(getResources().getStringArray(R.array.distinct_location_names));
-            presenter = new EventsPresenter(biletService, distinctLocationNames);
-
+            presenter = new EventsPresenter(env, biletService, distinctLocationNames);
 
             presenter.setView(this);
             Log.d(name, "onCreate: loaded cache, created new presenter");
@@ -92,76 +136,9 @@ public class EventsActivity extends Activity implements EventsView {
     }
 
     @Override
-    public Observable<Boolean> isOnline() {
-        ConnectivityManager connMgr = (ConnectivityManager)
-                getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        Log.d(name, "is online: " + (networkInfo != null && networkInfo.isConnected()));
-        return Observable.just(networkInfo != null && networkInfo.isConnected());
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.e(name, "on restart:");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.e(name, "onResume:");
-    }
-
-    @Override
-    protected void onStop() {
-         super.onStop();
-        Log.e(name, "onStop:");
-    }
-
-    private void createLocationSpinner() {
-
-        spinner = (Spinner) findViewById(R.id.locationSpinner);
-        locationAdapter = new LocationAdapter(this, new ArrayList<>());
-        spinner.setAdapter(locationAdapter);
-    }
-
-
-
-    private void createEventsFromSpinnerSelection() {
-        listView = (ListView) findViewById(R.id.eventsListView);
-        eventAdapter = new EventAdapter(this, new ArrayList<>());
-        listView.setAdapter(eventAdapter);
-    }
-
-
-    private Observable<Location> selections(final Spinner spinner) {
-        return Observable.create(subscriber -> {
-            spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    Location selectedLocation = (Location) spinner.getItemAtPosition(position);
-                    subscriber.onNext(selectedLocation);
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-
-                }
-            });
-        });
-    }
-
-    @Override
-    public Observable<DragEvent> listDraggs() {
-        return Observable.create(subscriber -> {
-            listView.setOnDragListener(new View.OnDragListener() {
-                @Override
-                public boolean onDrag(View v, DragEvent event) {
-                    subscriber.onNext(event);
-                    return true;
-                }
-            });
-        });
+    public void showError() {
+        Log.e(name, "show error toast");
+        Toast.makeText(getApplicationContext(), "There was an error. Please retry.", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -181,15 +158,21 @@ public class EventsActivity extends Activity implements EventsView {
         return selections(spinner);
     }
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        //  presenter.setVisibility(hasFocus);
-    }
+    private Observable<Location> selections(final Spinner spinner) {
+        return Observable.create(subscriber -> {
+            spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    Location selectedLocation = (Location) spinner.getItemAtPosition(position);
+                    subscriber.onNext(selectedLocation);
+                }
 
-    @Override
-    public void onCreate() {
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
 
+                }
+            });
+        });
     }
 
     @Override
@@ -199,8 +182,8 @@ public class EventsActivity extends Activity implements EventsView {
 
     @Override
     public void onForeground() {
-
     }
+
 
     @Override
     protected void onPause() {
@@ -216,10 +199,22 @@ public class EventsActivity extends Activity implements EventsView {
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.e(name, "on destroy");
-        presenter.removeView();
-        Log.d(name, "onDestroy: removed view");
+    protected void onRestart() {
+        super.onRestart();
+        Log.e(name, "on restart:");
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.e(name, "onResume:");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.e(name, "onStop:");
+    }
+
+
 }

@@ -139,8 +139,8 @@ public class BiletMasterServiceImpl implements BiletMasterService {
                         e.setVenue(venue);
                     }
                     return ev;
-                })
-                .onErrorResumeNext(Observable.empty());
+                });
+                //.onErrorResumeNext(Observable.empty());
     }
 
     private Func1<? super InputStream, List<Location>> parseLocations =

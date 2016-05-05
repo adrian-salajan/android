@@ -2,56 +2,46 @@ package ro.asalajan.biletmaster.presenters;
 
 import android.util.Log;
 
+import java.util.Collections;
 import java.util.List;
 
-import ro.asalajan.biletmaster.model.Event;
 import ro.asalajan.biletmaster.model.Location;
-import ro.asalajan.biletmaster.services.biletmaster.BiletMasterHelper;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterService;
 import ro.asalajan.biletmaster.view.EventsView;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.observables.ConnectableObservable;
+
+import static java.lang.Boolean.*;
 
 public class EventsPresenter implements Presenter<EventsView>  {
 
-
-    private BiletMasterService biletService;
-    private List<String> distinctLocationNames;
-    private EventsView view;
-    private Subscription locationsSub;
-    private Subscription eventsSub;
-    private Subscription dragsWhileOfflineSub;
-
     private static String name = "EventPresenter";
 
-    public EventsPresenter(BiletMasterService biletService, List<String> distinctLocationNames) {
+    private EventsView view;
+
+    private Environment env;
+    private BiletMasterService biletService;
+    private List<String> distinctLocationNames;
+
+    private Subscription locationsSub, eventsSub;
+
+    public EventsPresenter(Environment env, BiletMasterService biletService, List<String> distinctLocationNames) {
+        this.env = env;
         this.biletService = biletService;
         this.distinctLocationNames = distinctLocationNames;
     }
 
     @Override
     public void setView(EventsView view) {
-
         this.view = view;
-
-        initView(this.view);
-
-//        dragsWhileOfflineSub = view.listDraggs()
-//                .takeUntil(view.isOnline().filter(isOnline -> Boolean.TRUE.equals(isOnline)))
-//                .doOnCompleted(() -> initView(this.view))
-//                .subscribe(
-//                        dragEvent1 -> this.view.showOffline(),
-//                        t -> t.printStackTrace());
-
-
+        init();
     }
 
-    private void initView(EventsView view) {
-
-        Log.e(name, ">>>>>>>init view");
-
-        locationsSub = biletService.getDistinctLocations(distinctLocationNames)
+    private void init() {
+        Log.e(name, ">>>>>>>init presenter");
+        locationsSub =  biletService.getDistinctLocations(distinctLocationNames)
                 .map(locations -> {
                     for (Location loc : locations) {
                         if (loc.getLocation() == null || loc.getLocation().isEmpty()) {
@@ -61,27 +51,39 @@ public class EventsPresenter implements Presenter<EventsView>  {
                     return locations;
                 })
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnError(throwable -> {
+                    view.setEvents(Collections.emptyList());
+                    env.isOnline().filter(b -> TRUE.equals(b)).doOnCompleted(() -> this.view.showError()).subscribe();
+                    env.isOnline().filter(b -> FALSE.equals(b)).doOnCompleted(() -> this.view.showOffline()).subscribe();
+                })
+                .retry(4)
                 .subscribe(locations -> view.setLocations(locations),
-                        t -> Log.d("activity locations", t.toString()));
+                        t -> t.printStackTrace());
 
         onSelect(view.getSelectedLocation());
     }
 
     private void onSelect(Observable<Location> selected) {
-        eventsSub = selected.flatMap(location -> biletService.getEventsForLocation(location))
-                .doOnNext(events1 -> Log.d(">>>>", "next"))
+        eventsSub = selected
+                .flatMap(location -> biletService.getEventsForLocation(location))
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(events -> view.setEvents(events),
-                        t -> {Log.d("!!!!!!!!!!!!!!!!!!!!!!!!", t.toString()); t.printStackTrace();});
-    }
 
+                .doOnError(throwable -> {
+                    view.setEvents(Collections.emptyList());
+                    env.isOnline().filter(b -> TRUE.equals(b)).doOnCompleted(() -> this.view.showError()).subscribe();
+                    env.isOnline().filter(b -> FALSE.equals(b)).doOnCompleted(() -> this.view.showOffline()).subscribe();
+                })
+
+                .retry(4)
+                .subscribe(events -> view.setEvents(events),
+                        t -> t.printStackTrace());
+    }
 
 
     @Override
     public void removeView() {
         eventsSub.unsubscribe();
         locationsSub.unsubscribe();
-        //dragsWhileOfflineSub.unsubscribe();
         view = null;
     }
 }

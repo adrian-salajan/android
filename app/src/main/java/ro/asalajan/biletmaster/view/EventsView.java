@@ -1,7 +1,5 @@
 package ro.asalajan.biletmaster.view;
 
-import android.view.DragEvent;
-
 import java.util.List;
 
 import ro.asalajan.biletmaster.model.Event;
@@ -12,14 +10,12 @@ public interface EventsView extends View {
 
     void setLocations(List<Location> locations);
 
-    void setEvents(List<Event> events);
-
     Observable<Location> getSelectedLocation();
 
-    Observable<Boolean> isOnline();
+    void setEvents(List<Event> events);
 
     void showOffline();
 
-    Observable<DragEvent> listDraggs();
+    void showError();
 
 }
