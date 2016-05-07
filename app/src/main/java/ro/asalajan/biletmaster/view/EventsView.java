@@ -16,6 +16,12 @@ public interface EventsView extends View {
 
     void showOffline();
 
+    void hideOffline();
+
     void showError();
+
+    //void setRetries(Observable<Event> retries);
+
+    NoInternetView getNoInternetView();
 
 }

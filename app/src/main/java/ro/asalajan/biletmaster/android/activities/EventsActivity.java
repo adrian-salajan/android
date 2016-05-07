@@ -1,6 +1,8 @@
-package ro.asalajan.biletmaster.activities;
+package ro.asalajan.biletmaster.android.activities;
 
 import android.app.Activity;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,8 +18,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import ro.asalajan.biletmaster.R;
-import ro.asalajan.biletmaster.activities.adapter.EventAdapter;
-import ro.asalajan.biletmaster.activities.adapter.LocationAdapter;
+import ro.asalajan.biletmaster.android.AndroidEnvironment;
+import ro.asalajan.biletmaster.android.adapter.EventAdapter;
+import ro.asalajan.biletmaster.android.adapter.LocationAdapter;
+import ro.asalajan.biletmaster.android.fragments.NoInternetFragment;
 import ro.asalajan.biletmaster.cache.EventListCache;
 import ro.asalajan.biletmaster.cache.LocationCache;
 import ro.asalajan.biletmaster.model.Event;
@@ -31,6 +35,7 @@ import ro.asalajan.biletmaster.services.biletmaster.CachedBiletMasterService;
 import ro.asalajan.biletmaster.cache.FilePersistableCache;
 import ro.asalajan.biletmaster.gateways.HttpGateway;
 import ro.asalajan.biletmaster.view.EventsView;
+import ro.asalajan.biletmaster.view.NoInternetView;
 import rx.Observable;
 
 public class EventsActivity extends Activity implements EventsView {
@@ -49,6 +54,8 @@ public class EventsActivity extends Activity implements EventsView {
     private ListView listView;
 
     Environment env;
+    private FragmentManager fragmentManager;
+    private NoInternetFragment noInternetFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +90,8 @@ public class EventsActivity extends Activity implements EventsView {
     @Override
     public void onViewCreate() {
         JodaTimeAndroid.init(this);
+        fragmentManager = getFragmentManager();
+        noInternetFragment = new NoInternetFragment();
         env = new AndroidEnvironment(getApplicationContext());
 
         setContentView(R.layout.activity_events);
@@ -131,8 +140,26 @@ public class EventsActivity extends Activity implements EventsView {
 
     @Override
     public void showOffline() {
-        Log.e(name, "show offline toast");
-        Toast.makeText(getApplicationContext(), "No internet connection available.", Toast.LENGTH_SHORT).show();
+        Log.e(name, "show offline fragment !!!!!!!!!");
+        FragmentTransaction tx = fragmentManager.beginTransaction();
+
+        tx.add(R.id.eventsActivity, noInternetFragment);
+        tx.commit();
+//        Log.e(name, "show offline toast");
+//        Toast.makeText(getApplicationContext(), "No internet connection available.", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void hideOffline() {
+        if (noInternetFragment != null) {
+            FragmentTransaction tx = fragmentManager.beginTransaction();
+            tx.remove(noInternetFragment);
+            tx.commit();
+        }
+    }
+
+    public void triggerSelect() {
+        spinner.setSelection(spinner.getSelectedItemPosition());
     }
 
     @Override
@@ -142,9 +169,15 @@ public class EventsActivity extends Activity implements EventsView {
     }
 
     @Override
+    public NoInternetView getNoInternetView() {
+        return noInternetFragment;
+    }
+
+    @Override
     public void setLocations(List<Location> locations) {
         locationAdapter.clear();
         locationAdapter.addAll(locations);
+        triggerSelect();
     }
 
     @Override

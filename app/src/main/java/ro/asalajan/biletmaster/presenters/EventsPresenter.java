@@ -1,5 +1,6 @@
 package ro.asalajan.biletmaster.presenters;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import java.util.Collections;
@@ -42,39 +43,54 @@ public class EventsPresenter implements Presenter<EventsView>  {
     private void init() {
         Log.e(name, ">>>>>>>init presenter");
         locationsSub =  biletService.getDistinctLocations(distinctLocationNames)
-                .map(locations -> {
-                    for (Location loc : locations) {
-                        if (loc.getLocation() == null || loc.getLocation().isEmpty()) {
-                            loc.setLocation("Alte zone");
-                        }
-                    }
-                    return locations;
-                })
+                .map(locations -> initEmptyLocation(locations))
+
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnError(throwable -> {
+
+                .retryWhen(errors -> errors.flatMap(t -> {
                     view.setEvents(Collections.emptyList());
-                    env.isOnline().filter(b -> TRUE.equals(b)).doOnCompleted(() -> this.view.showError()).subscribe();
+                    Log.e("retry", "in retry locations.....");
                     env.isOnline().filter(b -> FALSE.equals(b)).doOnCompleted(() -> this.view.showOffline()).subscribe();
-                })
-                .retry(4)
-                .subscribe(locations -> view.setLocations(locations),
+                    return view.getNoInternetView().retry().doOnNext(click -> {
+                        Log.e("retry", "retry clicked !!!!!!!!!!!!!!!!!");
+                        this.view.hideOffline();
+                    });
+                }))
+                .doOnCompleted(() ->  {Log.e("eventsCompleted", "doing select"); onSelect(view.getSelectedLocation()); })
+                .subscribe(locations -> {view.setLocations(locations);  Log.e("init", "set locations.....");},
                         t -> t.printStackTrace());
 
-        onSelect(view.getSelectedLocation());
+        //onSelect(view.getSelectedLocation());
+    }
+
+    @NonNull
+    private List<Location> initEmptyLocation(List<Location> locations) {
+        for (Location loc : locations) {
+            if (loc.getLocation() == null || loc.getLocation().isEmpty()) {
+                loc.setLocation("Alte zone");
+            }
+        }
+        return locations;
     }
 
     private void onSelect(Observable<Location> selected) {
+        Log.e("eventsCompleted", "onSelect");
         eventsSub = selected
+                //.replay(1).autoConnect(1)
+
                 .flatMap(location -> biletService.getEventsForLocation(location))
                 .observeOn(AndroidSchedulers.mainThread())
 
-                .doOnError(throwable -> {
+                .retryWhen(errors -> errors.flatMap(t -> {
                     view.setEvents(Collections.emptyList());
-                    env.isOnline().filter(b -> TRUE.equals(b)).doOnCompleted(() -> this.view.showError()).subscribe();
+                    Log.e("retry", "in retry events.....");
                     env.isOnline().filter(b -> FALSE.equals(b)).doOnCompleted(() -> this.view.showOffline()).subscribe();
-                })
+                    return view.getNoInternetView().retry().doOnNext(click -> {
+                        Log.e("retry", "retry clicked !!!!!!!!!!!!!!!!!");
+                        this.view.hideOffline();
+                    });
+                }))
 
-                .retry(4)
                 .subscribe(events -> view.setEvents(events),
                         t -> t.printStackTrace());
     }

@@ -23,6 +23,7 @@ import ro.asalajan.biletmaster.services.biletmaster.BiletMasterHelper;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterService;
 import ro.asalajan.biletmaster.services.biletmaster.BiletMasterServiceImpl;
 import ro.asalajan.biletmaster.view.EventsView;
+import ro.asalajan.biletmaster.view.NoInternetView;
 import rx.Observable;
 import rx.Scheduler;
 import rx.android.plugins.RxAndroidPlugins;
@@ -86,7 +87,7 @@ public class TestEventsPresenter {
     private List<List<Event>> viewEvents;
 
     Environment env;
-    private boolean showedOffline, showedError;
+    private boolean showedOffline, hiddenOffline, showedError;
     private Location selectedLocation;
 
 //        @After
@@ -159,6 +160,27 @@ public class TestEventsPresenter {
         Assert.assertEquals(expectedEvents2(), viewEvents.get(1));
 
         noMsgShowed();
+    }
+
+    @Test
+    public void givenNoInternetWhenGetLocationShowOffline() {
+
+        when(service.getDistinctLocations(eq(BiletMasterHelper.DISTINCT_LOCATIONS))).thenReturn(Observable.error(new IOException("offline")));
+
+      //  when(service.getEventsForLocation(eq(location))).thenReturn(Observable.error(new IOException("offline")));
+
+        when(env.isOnline()).thenReturn(Observable.just(Boolean.FALSE));
+
+        presenter = new EventsPresenter(env, service, BiletMasterHelper.DISTINCT_LOCATIONS);
+        EventsView view = getEventsView();
+
+        presenter.setView(view);
+
+        mainThread.advanceTimeBy(1, TimeUnit.SECONDS);
+
+        Assert.assertEquals(Collections.emptyList(), viewEvents.get(0));
+
+        Assert.assertTrue("Offline msg not showed", showedOffline);
     }
 
     @Test
@@ -259,8 +281,18 @@ public class TestEventsPresenter {
             }
 
             @Override
+            public void hideOffline() {
+                hiddenOffline = false;
+            }
+
+            @Override
             public void showError() {
                 showedError = true;
+            }
+
+            @Override
+            public NoInternetView getNoInternetView() {
+                return null;
             }
 
             @Override

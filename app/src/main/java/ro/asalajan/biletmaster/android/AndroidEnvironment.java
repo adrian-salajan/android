@@ -1,4 +1,4 @@
-package ro.asalajan.biletmaster.activities;
+package ro.asalajan.biletmaster.android;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

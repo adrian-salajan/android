@@ -1,7 +1,6 @@
-package ro.asalajan.biletmaster.activities.adapter;
+package ro.asalajan.biletmaster.android.adapter;
 
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 public class EventHolder {
