@@ -15,6 +15,7 @@ import net.danlew.android.joda.JodaTimeAndroid;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import ro.asalajan.biletmaster.R;
@@ -37,6 +38,7 @@ import ro.asalajan.biletmaster.gateways.HttpGateway;
 import ro.asalajan.biletmaster.view.EventsView;
 import ro.asalajan.biletmaster.view.NoInternetView;
 import rx.Observable;
+import rx.android.plugins.RxAndroidPlugins;
 
 public class EventsActivity extends Activity implements EventsView {
 
@@ -141,6 +143,7 @@ public class EventsActivity extends Activity implements EventsView {
     @Override
     public void showOffline() {
         Log.e(name, "show offline fragment !!!!!!!!!");
+        setEvents(Collections.emptyList());
         FragmentTransaction tx = fragmentManager.beginTransaction();
 
         tx.add(R.id.eventsActivity, noInternetFragment);
@@ -159,7 +162,13 @@ public class EventsActivity extends Activity implements EventsView {
     }
 
     public void triggerSelect() {
-        spinner.setSelection(spinner.getSelectedItemPosition());
+        int selectedItemPosition = spinner.getSelectedItemPosition();
+        if (selectedItemPosition != Spinner.INVALID_POSITION) {
+            spinner.setSelection(selectedItemPosition, true);
+        } else {
+            //spinner.setSelection(0);
+            spinner.setSelection(1, true);
+        }
     }
 
     @Override
@@ -177,7 +186,7 @@ public class EventsActivity extends Activity implements EventsView {
     public void setLocations(List<Location> locations) {
         locationAdapter.clear();
         locationAdapter.addAll(locations);
-        triggerSelect();
+       // triggerSelect();
     }
 
     @Override
@@ -205,6 +214,12 @@ public class EventsActivity extends Activity implements EventsView {
 
                 }
             });
+
+            int selectedItemPosition = spinner.getSelectedItemPosition();
+            if (selectedItemPosition == spinner.INVALID_POSITION) {
+                selectedItemPosition = 0;
+            }
+            subscriber.onNext(locationAdapter.getItem(selectedItemPosition));
         });
     }
 

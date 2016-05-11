@@ -47,20 +47,30 @@ public class EventsPresenter implements Presenter<EventsView>  {
 
                 .observeOn(AndroidSchedulers.mainThread())
 
-                .retryWhen(errors -> errors.flatMap(t -> {
-                    view.setEvents(Collections.emptyList());
-                    Log.e("retry", "in retry locations.....");
-                    env.isOnline().filter(b -> FALSE.equals(b)).doOnCompleted(() -> this.view.showOffline()).subscribe();
-                    return view.getNoInternetView().retry().doOnNext(click -> {
-                        Log.e("retry", "retry clicked !!!!!!!!!!!!!!!!!");
-                        this.view.hideOffline();
-                    });
-                }))
-                .doOnCompleted(() ->  {Log.e("eventsCompleted", "doing select"); onSelect(view.getSelectedLocation()); })
-                .subscribe(locations -> {view.setLocations(locations);  Log.e("init", "set locations.....");},
-                        t -> t.printStackTrace());
+                .retryWhen(errors -> errors.doOnNext((e) -> {
+                            Log.e("retry", "in retry locations.....");
 
-        //onSelect(view.getSelectedLocation());
+                            //TODO only show offline if fragment not already added (implement in showOffline())
+                            env.isOnline().filter(b -> FALSE.equals(b)).doOnCompleted(() -> this.view.showOffline()).subscribe();
+                            //TODO show cached even when no internet
+                        })
+
+                                .zipWith(view.getNoInternetView().retry()
+                                        .doOnNext(click -> {
+                                            Log.e("retry", "retry locations clicked !!!!!!!!!!!!!!!!!");
+                                            this.view.hideOffline();
+                                        }), (throwable, click) -> click)
+                )
+
+
+                .subscribe(
+                        locations -> {
+                            view.setLocations(locations);
+                            Log.e("init", "set locations.....");
+                        },
+                        t -> t.printStackTrace(),
+                        () -> onSelect(view.getSelectedLocation()));
+
     }
 
     @NonNull
@@ -81,15 +91,21 @@ public class EventsPresenter implements Presenter<EventsView>  {
                 .flatMap(location -> biletService.getEventsForLocation(location))
                 .observeOn(AndroidSchedulers.mainThread())
 
-                .retryWhen(errors -> errors.flatMap(t -> {
-                    view.setEvents(Collections.emptyList());
-                    Log.e("retry", "in retry events.....");
-                    env.isOnline().filter(b -> FALSE.equals(b)).doOnCompleted(() -> this.view.showOffline()).subscribe();
-                    return view.getNoInternetView().retry().doOnNext(click -> {
-                        Log.e("retry", "retry clicked !!!!!!!!!!!!!!!!!");
-                        this.view.hideOffline();
-                    });
-                }))
+
+                .retryWhen(errors -> errors.doOnNext((e) -> {
+
+                            Log.e("retry", "in retry events.....");
+                            env.isOnline().filter(b -> FALSE.equals(b)).doOnCompleted(() -> this.view.showOffline()).subscribe();
+                        })
+                                .zipWith(view.getNoInternetView().retry()
+                                                .doOnNext(click -> {
+                                                    Log.e("retry", "retry events clicked !!!!!!!!!!!!!!!!!");
+                                                    this.view.hideOffline();
+                                                })
+                                        ,
+                                        (throwable, click) -> click)
+                )
+
 
                 .subscribe(events -> view.setEvents(events),
                         t -> t.printStackTrace());
