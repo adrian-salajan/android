@@ -3,7 +3,6 @@ package ro.asalajan.biletmaster.presenters;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import java.util.Collections;
 import java.util.List;
 
 import ro.asalajan.biletmaster.model.Location;
@@ -12,9 +11,9 @@ import ro.asalajan.biletmaster.view.EventsView;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.observables.ConnectableObservable;
+import rx.functions.Action1;
 
-import static java.lang.Boolean.*;
+import static rx.Observable.*;
 
 public class EventsPresenter implements Presenter<EventsView>  {
 
@@ -39,28 +38,14 @@ public class EventsPresenter implements Presenter<EventsView>  {
         this.view = view;
         init();
     }
-
+    //TODO show cached even when no internet
     private void init() {
         Log.e(name, ">>>>>>>init presenter");
-        locationsSub =  biletService.getDistinctLocations(distinctLocationNames)
+        locationsSub = biletService.getDistinctLocations(distinctLocationNames)
                 .map(locations -> initEmptyLocation(locations))
 
                 .observeOn(AndroidSchedulers.mainThread())
-
-                .retryWhen(errors -> errors.doOnNext((e) -> {
-                            Log.e("retry", "in retry locations.....");
-
-                            //TODO only show offline if fragment not already added (implement in showOffline())
-                            env.isOnline().filter(b -> FALSE.equals(b)).doOnCompleted(() -> this.view.showOffline()).subscribe();
-                            //TODO show cached even when no internet
-                        })
-
-                                .zipWith(view.getNoInternetView().retry()
-                                        .doOnNext(click -> {
-                                            Log.e("retry", "retry locations clicked !!!!!!!!!!!!!!!!!");
-                                            this.view.hideOffline();
-                                        }), (throwable, click) -> click)
-                )
+                .retryWhen(errors -> errors.compose(retryIsClicked))
 
 
                 .subscribe(
@@ -71,6 +56,30 @@ public class EventsPresenter implements Presenter<EventsView>  {
                         t -> t.printStackTrace(),
                         () -> onSelect(view.getSelectedLocation()));
 
+    }
+
+    private Transformer<Throwable, Object> retryIsClicked = errors -> errors
+            .doOnNext(showOffline())
+            .zipWith(getRetries(), (throwable, click) -> click)
+            .doOnNext(hideOffline());
+
+    private Action1<Object> hideOffline() {
+        return (click) -> EventsPresenter.this.view.hideOffline();
+    }
+
+    @NonNull
+    private Observable<Object> getRetries() {
+        return view.getNoInternetView().retries();
+
+    }
+
+    @NonNull
+    private Action1<Throwable> showOffline() {
+        return (e) -> env.isOnline().toSingle().subscribe(isOnline -> {
+            if (!isOnline) {
+                EventsPresenter.this.view.showOffline();
+            }
+        });
     }
 
     @NonNull
@@ -92,19 +101,7 @@ public class EventsPresenter implements Presenter<EventsView>  {
                 .observeOn(AndroidSchedulers.mainThread())
 
 
-                .retryWhen(errors -> errors.doOnNext((e) -> {
-
-                            Log.e("retry", "in retry events.....");
-                            env.isOnline().filter(b -> FALSE.equals(b)).doOnCompleted(() -> this.view.showOffline()).subscribe();
-                        })
-                                .zipWith(view.getNoInternetView().retry()
-                                                .doOnNext(click -> {
-                                                    Log.e("retry", "retry events clicked !!!!!!!!!!!!!!!!!");
-                                                    this.view.hideOffline();
-                                                })
-                                        ,
-                                        (throwable, click) -> click)
-                )
+                .retryWhen(errors -> errors.compose(retryIsClicked))
 
 
                 .subscribe(events -> view.setEvents(events),

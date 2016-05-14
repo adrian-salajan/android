@@ -6,6 +6,7 @@ import android.view.DragEvent;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -33,6 +34,7 @@ import rx.plugins.RxJavaPlugins;
 import rx.plugins.RxJavaSchedulersHook;
 import rx.schedulers.Schedulers;
 import rx.schedulers.TestScheduler;
+import rx.schedulers.TrampolineScheduler;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Matchers.anyList;
@@ -69,6 +71,7 @@ public class TestEventsPresenter {
             public Scheduler getNewThreadScheduler() {
                 return newThread;
             }
+
 
 
         });
@@ -111,7 +114,9 @@ public class TestEventsPresenter {
 
         env = mock(Environment.class);
         showedOffline = false;
+        hiddenOffline = false;
         showedError = false;
+        when(env.isOnline()).thenReturn(Observable.just(Boolean.TRUE));
     }
 
     @Test
@@ -125,7 +130,6 @@ public class TestEventsPresenter {
         presenter.setView(view);
 
         mainThread.advanceTimeBy(1, TimeUnit.SECONDS);
-
         Assert.assertEquals(expectedLocations(), viewLocations.get(0));
         noMsgShowed();
 
@@ -162,12 +166,15 @@ public class TestEventsPresenter {
         noMsgShowed();
     }
 
+
     @Test
-    public void givenNoInternetWhenGetLocationShowOffline() {
+    public void givenNoInternetWhenGetLocationsShowOffline() {
 
-        when(service.getDistinctLocations(eq(BiletMasterHelper.DISTINCT_LOCATIONS))).thenReturn(Observable.error(new IOException("offline")));
-
-      //  when(service.getEventsForLocation(eq(location))).thenReturn(Observable.error(new IOException("offline")));
+        when(service.getDistinctLocations(eq(BiletMasterHelper.DISTINCT_LOCATIONS)))
+                .thenReturn(Observable.create(subscriber -> {
+                    subscriber.onError(new IOException("offline test error"));
+                    subscriber.onNext(expectedLocations());
+                }), Observable.just(expectedLocations()));
 
         when(env.isOnline()).thenReturn(Observable.just(Boolean.FALSE));
 
@@ -176,19 +183,21 @@ public class TestEventsPresenter {
 
         presenter.setView(view);
 
-        mainThread.advanceTimeBy(1, TimeUnit.SECONDS);
-
-        Assert.assertEquals(Collections.emptyList(), viewEvents.get(0));
+        mainThread.advanceTimeBy(5, TimeUnit.SECONDS);
 
         Assert.assertTrue("Offline msg not showed", showedOffline);
+        Assert.assertTrue("Offline msg not hidden", hiddenOffline);
+
+//        Assert.assertEquals(expectedLocations(), viewLocations.get(0));
     }
+
 
     @Test
     public void givenNoInternetWhenGetEventsShowOffline() {
 
         when(service.getDistinctLocations(eq(BiletMasterHelper.DISTINCT_LOCATIONS))).thenReturn(Observable.just(newArrayList(location, location2)));
 
-        when(service.getEventsForLocation(eq(location))).thenReturn(Observable.error(new IOException("offline")));
+        when(service.getEventsForLocation(eq(location))).thenReturn(Observable.error(new IOException("offline test error")));
 
         when(env.isOnline()).thenReturn(Observable.just(Boolean.FALSE));
 
@@ -199,9 +208,10 @@ public class TestEventsPresenter {
 
         mainThread.advanceTimeBy(1, TimeUnit.SECONDS);
 
-        Assert.assertEquals(Collections.emptyList(), viewEvents.get(0));
-
         Assert.assertTrue("Offline msg not showed", showedOffline);
+        Assert.assertTrue("Offline msg not hidden", hiddenOffline);
+
+       // Assert.assertEquals(Collections.emptyList(), viewEvents.get(0));
     }
 
     @Test
@@ -282,7 +292,7 @@ public class TestEventsPresenter {
 
             @Override
             public void hideOffline() {
-                hiddenOffline = false;
+                hiddenOffline = true;
             }
 
             @Override
@@ -292,7 +302,32 @@ public class TestEventsPresenter {
 
             @Override
             public NoInternetView getNoInternetView() {
-                return null;
+                return new NoInternetView() {
+                    @Override
+                    public Observable<Object> retries() {
+                        return Observable.just(new Object());
+                    }
+
+                    @Override
+                    public void onViewCreate() {
+
+                    }
+
+                    @Override
+                    public void onBackground() {
+
+                    }
+
+                    @Override
+                    public void onForeground() {
+
+                    }
+
+                    @Override
+                    public void onViewDestroy() {
+
+                    }
+                };
             }
 
             @Override

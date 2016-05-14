@@ -4,6 +4,6 @@ import rx.Observable;
 
 public interface NoInternetView extends View {
 
-    Observable<Object> retry();
+    Observable<Object> retries();
 
 }

@@ -140,24 +140,30 @@ public class EventsActivity extends Activity implements EventsView {
         locationCache.load();
     }
 
+
+    private boolean retryViewInForeground = false;
     @Override
     public void showOffline() {
-        Log.e(name, "show offline fragment !!!!!!!!!");
-        setEvents(Collections.emptyList());
-        FragmentTransaction tx = fragmentManager.beginTransaction();
+        if (!retryViewInForeground) {
+            Log.e(name, "show offline fragment !!!!!!!!!");
+            setEvents(Collections.emptyList());
+            FragmentTransaction tx = fragmentManager.beginTransaction();
 
-        tx.add(R.id.eventsActivity, noInternetFragment);
-        tx.commit();
+            tx.add(R.id.eventsActivity, noInternetFragment);
+            tx.commit();
+            retryViewInForeground = true;
+        }
 //        Log.e(name, "show offline toast");
 //        Toast.makeText(getApplicationContext(), "No internet connection available.", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void hideOffline() {
-        if (noInternetFragment != null) {
+        if (noInternetFragment != null && retryViewInForeground) {
             FragmentTransaction tx = fragmentManager.beginTransaction();
             tx.remove(noInternetFragment);
             tx.commit();
+            retryViewInForeground = false;
         }
     }
 
@@ -174,7 +180,7 @@ public class EventsActivity extends Activity implements EventsView {
     @Override
     public void showError() {
         Log.e(name, "show error toast");
-        Toast.makeText(getApplicationContext(), "There was an error. Please retry.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(), "There was an error. Please retries.", Toast.LENGTH_SHORT).show();
     }
 
     @Override
