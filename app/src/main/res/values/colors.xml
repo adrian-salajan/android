@@ -15,5 +15,6 @@
 
     <!--spinner -->
     <color name="spinner_active">#FA7222</color>
+    <color name="spinner_inactive">#777</color>
     <color name="spinner_bg">#222</color>
 </resources>

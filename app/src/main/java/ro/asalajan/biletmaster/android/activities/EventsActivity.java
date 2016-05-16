@@ -3,10 +3,12 @@ package ro.asalajan.biletmaster.android.activities;
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -144,12 +146,15 @@ public class EventsActivity extends Activity implements EventsView {
     private boolean retryViewInForeground = false;
     @Override
     public void showOffline() {
+        Log.e(name, "trying to show offline fragment !!!!!!!!!");
         if (!retryViewInForeground) {
             Log.e(name, "show offline fragment !!!!!!!!!");
             setEvents(Collections.emptyList());
             FragmentTransaction tx = fragmentManager.beginTransaction();
 
             tx.add(R.id.eventsActivity, noInternetFragment);
+            spinner.setEnabled(false);
+          //  ((ImageView)spinner.findViewById(R.id.spinner_dropdown)).setColorFilter(Color.argb(255, 90, 90, 90));
             tx.commit();
             retryViewInForeground = true;
         }
@@ -159,9 +164,13 @@ public class EventsActivity extends Activity implements EventsView {
 
     @Override
     public void hideOffline() {
+        Log.e(name, "trying to hide offline fragment !!!!!!!!!");
         if (noInternetFragment != null && retryViewInForeground) {
+            Log.e(name, "hiding offline fragment !!!!!!!!!");
             FragmentTransaction tx = fragmentManager.beginTransaction();
             tx.remove(noInternetFragment);
+            spinner.setEnabled(true);
+        //    ((ImageView)spinner.findViewById(R.id.spinner_dropdown)).setColorFilter(Color.argb(255, 255, 255, 90));
             tx.commit();
             retryViewInForeground = false;
         }
@@ -197,6 +206,7 @@ public class EventsActivity extends Activity implements EventsView {
 
     @Override
     public void setEvents(List<Event> events) {
+        Log.e(name, "set events");
         eventAdapter.clear();
         eventAdapter.addAll(events);
     }
@@ -221,11 +231,11 @@ public class EventsActivity extends Activity implements EventsView {
                 }
             });
 
-            int selectedItemPosition = spinner.getSelectedItemPosition();
-            if (selectedItemPosition == spinner.INVALID_POSITION) {
-                selectedItemPosition = 0;
-            }
-            subscriber.onNext(locationAdapter.getItem(selectedItemPosition));
+//            int selectedItemPosition = spinner.getSelectedItemPosition();
+//            if (selectedItemPosition == spinner.INVALID_POSITION) {
+//                selectedItemPosition = 0;
+//            }
+//            subscriber.onNext(locationAdapter.getItem(selectedItemPosition));
         });
     }
 

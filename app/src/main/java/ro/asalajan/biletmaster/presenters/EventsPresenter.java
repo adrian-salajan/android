@@ -97,14 +97,13 @@ public class EventsPresenter implements Presenter<EventsView>  {
         eventsSub = selected
                 //.replay(1).autoConnect(1)
 
-                .flatMap(location -> biletService.getEventsForLocation(location))
+                .flatMap(location -> biletService.getEventsForLocation(location).retryWhen(errors -> errors.observeOn(AndroidSchedulers.mainThread()).compose(retryIsClicked)))
                 .observeOn(AndroidSchedulers.mainThread())
 
 
-                .retryWhen(errors -> errors.compose(retryIsClicked))
-
-
-                .subscribe(events -> view.setEvents(events),
+                .subscribe(events -> {
+                    view.setEvents(events);
+                    hideOffline();},
                         t -> t.printStackTrace());
     }
 

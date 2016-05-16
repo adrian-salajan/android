@@ -35,7 +35,7 @@ public class NoInternetFragment extends Fragment implements NoInternetView {
 
     @Override
     public Observable<Object> retries() {
-        return clicks.asObservable();
+        return Observable.defer( () -> clicks.asObservable());
     }
 
 
