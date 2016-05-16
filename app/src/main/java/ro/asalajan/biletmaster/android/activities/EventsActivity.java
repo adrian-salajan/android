@@ -153,7 +153,7 @@ public class EventsActivity extends Activity implements EventsView {
             FragmentTransaction tx = fragmentManager.beginTransaction();
 
             tx.add(R.id.eventsActivity, noInternetFragment);
-            spinner.setEnabled(false);
+         //   spinner.setEnabled(false);
           //  ((ImageView)spinner.findViewById(R.id.spinner_dropdown)).setColorFilter(Color.argb(255, 90, 90, 90));
             tx.commit();
             retryViewInForeground = true;
@@ -169,7 +169,7 @@ public class EventsActivity extends Activity implements EventsView {
             Log.e(name, "hiding offline fragment !!!!!!!!!");
             FragmentTransaction tx = fragmentManager.beginTransaction();
             tx.remove(noInternetFragment);
-            spinner.setEnabled(true);
+          //  spinner.setEnabled(true);
         //    ((ImageView)spinner.findViewById(R.id.spinner_dropdown)).setColorFilter(Color.argb(255, 255, 255, 90));
             tx.commit();
             retryViewInForeground = false;

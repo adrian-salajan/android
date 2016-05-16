@@ -12,6 +12,7 @@ import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
+import rx.observables.ConnectableObservable;
 
 import static rx.Observable.*;
 
@@ -94,10 +95,15 @@ public class EventsPresenter implements Presenter<EventsView>  {
 
     private void onSelect(Observable<Location> selected) {
         Log.e("eventsCompleted", "onSelect");
-        eventsSub = selected
+        ConnectableObservable<Location> publish = selected.publish();
+        eventsSub = publish
                 //.replay(1).autoConnect(1)
 
-                .flatMap(location -> biletService.getEventsForLocation(location).retryWhen(errors -> errors.observeOn(AndroidSchedulers.mainThread()).compose(retryIsClicked)))
+                .flatMap(location -> biletService.getEventsForLocation(location)
+                        .retryWhen(errors -> errors.observeOn(AndroidSchedulers.mainThread()).compose(retryIsClicked)
+                        .takeUntil(publish)
+                        .doOnCompleted(() -> view.hideOffline()))
+                )
                 .observeOn(AndroidSchedulers.mainThread())
 
 
@@ -105,6 +111,8 @@ public class EventsPresenter implements Presenter<EventsView>  {
                     view.setEvents(events);
                     hideOffline();},
                         t -> t.printStackTrace());
+
+        publish.connect();
     }
 
 
